@@ -57,19 +57,25 @@ def db_init_db():
             set_id INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id INTEGER NOT NULL,
             exercise TEXT NOT NULL,
-            weight REAL NOT NULL,
-            reps INTEGER NOT NULL,
-            set_index INTEGER NOT NULL,
-            is_1rm INTEGER NOT NULL,
+            weight REAL NOT NULL CHECK(weight >= 0),
+            reps INTEGER NOT NULL CHECK(reps > 0),
+            set_index INTEGER NOT NULL CHECK(set_index > 0),
+            is_1rm INTEGER NOT NULL CHECK(is_1rm IN (0, 1)),
             FOREIGN KEY (session_id) REFERENCES sessions(session_id)
         );
     ''')
+
+    # enforce unique set id
+    cursor.execute('''
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_sets_unique_order
+            ON sets(session_id, exercise, set_index);
+            ''')
 
     # commit changes and close
     conn.commit()
     conn.close()
 
-def db_get_conn():
+def get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
@@ -126,45 +132,41 @@ def db_insert_sets(conn, session_id, exercise, rows: Sequence[SetRow]) -> int:
 
     return cur.rowcount
 
-def db_get_active_session(user_id: int) -> Optional[int]:
-    with db_get_conn() as conn:
-        cursor = conn.cursor()
+def db_get_active_session(conn, user_id: int) -> Optional[int]:
+    cursor = conn.cursor()
 
-        # find the latest session and make sure it's not ended
-        cursor.execute(
-            """
-            SELECT session_id
-            FROM sessions
-            WHERE user_id = ?
-            AND ended_at IS NULL
-            ORDER BY session_id DESC
-            LIMIT 1
-            """,
-            (user_id,)
-        )
+    # find the latest session and make sure it's not ended
+    cursor.execute(
+        """
+        SELECT session_id
+        FROM sessions
+        WHERE user_id = ?
+        AND ended_at IS NULL
+        ORDER BY session_id DESC
+        LIMIT 1
+        """,
+        (user_id,)
+    )
 
-        row = cursor.fetchone()
-        if row is None:
-            return None
+    row = cursor.fetchone()
+    if row is None:
+        return None
 
-        session_id = row[0]
+    session_id = row[0]
 
-        return session_id
+    return session_id
 
-def db_get_sets_by_session(session_id: int) -> Sequence[SetRow]:
-    with db_get_conn() as conn:
-        cursor = conn.cursor()
+def db_get_sets_by_session(conn, session_id: int) -> tuple[str, float, int, int, int]:
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT set_id, exercise, weight, reps, is_1rm
+        FROM sets
+        WHERE session_id = ?
+        ORDER BY set_id DESC
+        """,
+        (session_id,)
+    )
 
-        print(f"current active session: {session_id}")
-        cursor.execute(
-            """
-            SELECT exercise, weight, reps, set_index, is_1rm
-            FROM sets
-            WHERE session_id = ?
-            ORDER BY set_index ASC
-            """,
-            (session_id,)
-        )
-
-        rows = cursor.fetchall()
-        return rows
+    rows = cursor.fetchall()
+    return rows

@@ -18,7 +18,7 @@ def main():
 
     while True:
         if menu_choice == 1:
-            active_session_id = start_new_session(active_user_id)
+            start_new_session(active_user_id)
 
         elif menu_choice == 2:
             add_set_ui(active_user_id)
@@ -34,7 +34,6 @@ def main():
 
         elif menu_choice == 6:
             end_active_session(active_user_id)
-            active_session_id = None
 
         elif menu_choice == 7:
             if closeout(active_user_id):

@@ -1,11 +1,10 @@
 '''
-services functions
-no UI, no db
+services: no UI, orchestrates DB calls
 '''
 
 from typing import Callable, Tuple, Optional
 import sqlite3
-from db import db_insert_sets, db_get_conn, db_get_active_session
+from db import db_insert_sets, get_conn, db_get_active_session
 
 SetRow = tuple[float, int, int] # (weight, reps, is_1rm)
 
@@ -27,21 +26,21 @@ def add_sets_from_entry(
     Returns (exercise, num_sets_inserted)
     '''
 
-    session_id = db_get_active_session(user_id)
-    if session_id is None:
-        raise NoActiveSessionError()
+    with get_conn() as conn:
+        session_id = db_get_active_session(conn, user_id)
+        if session_id is None:
+            raise NoActiveSessionError()
 
-    exercise, tokens = parse_entry_line(raw_entry)
+        exercise, tokens = parse_entry_line(raw_entry)
 
-    rows: list[SetRow] = []
-    for token in tokens:
-        weight, reps = parse_set_token(token)
-        is_1rm = 0
-        if reps == 1 and ask_is_1rm(exercise, weight):
-            is_1rm = 1
-        rows.append((weight, reps, is_1rm))
+        rows: list[SetRow] = []
+        for token in tokens:
+            weight, reps = parse_set_token(token)
+            is_1rm = 0
+            if reps == 1 and ask_is_1rm(exercise, weight):
+                is_1rm = 1
+            rows.append((weight, reps, is_1rm))
 
-    with db_get_conn() as conn:
         try:
             db_insert_sets(conn, session_id, exercise, rows)
             conn.commit()
