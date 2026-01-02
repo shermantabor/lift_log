@@ -2,11 +2,24 @@
 services: no UI, orchestrates DB calls
 '''
 
-from typing import Callable, Tuple, Optional
+from typing import Callable
 import sqlite3
-from db import db_insert_sets, get_conn, db_get_active_session
+from datetime import datetime
+from db import db_insert_sets, get_conn, db_get_active_session, db_create_user, db_get_user
 
 SetRow = tuple[float, int, int] # (weight, reps, is_1rm)
+# CONSTANT for main menu
+MENU_TEXT = """
+    Select from the following options:
+        1) Start new session
+	    2) Add sets to active session
+	    3) View active session
+	    4) View exercise stats
+	    5) List sessions
+	    6) End active session
+	    7) Exit
+	"""
+VALID_OPTIONS = (1, 2, 3, 4, 5, 6, 7)
 
 class NoActiveSessionError(Exception):
     pass
@@ -84,3 +97,37 @@ def parse_set_token(token: str) -> tuple[float, int]:
         raise ValueError(f"Weight and reps must be positive in '{token}'")
 
     return weight, reps
+
+# UI functions
+def get_username():
+    while True:
+        raw = input("Enter username: ")
+        if raw.strip(" ") != "":
+            username = normalize_username(raw)
+            return username
+        print("Empty string not accepted.")
+
+def get_menu_choice() -> int:
+    while True:
+        choice = input(MENU_TEXT)
+        if choice in ('1', '2', '3', '4', '5', '6', '7'):
+            return int(choice)
+        print("choice must be 1-7")
+
+def normalize_username(raw: str) -> str:
+    return " ".join(raw.strip().lower().split())
+
+def get_or_create_user(username: str) -> int:
+    username = normalize_username(username)
+    created_at = datetime.now().isoformat(timespec="seconds")
+
+    conn = get_conn()
+
+    user_id = db_get_user(conn, username)
+    if user_id is not None:
+        return user_id
+
+    user_id = db_create_user(conn, created_at, username)
+    conn.commit()
+    conn.close()
+    return user_id

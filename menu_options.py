@@ -3,24 +3,10 @@ functions to execute each menu option
 '''
 
 import sqlite3
-from pathlib import Path
 from datetime import datetime
-from db import (db_end_all_open_sessions, db_create_session, db_get_next_set_index,
-                db_insert_sets, get_conn, DB_PATH, db_get_active_session, db_get_sets_by_session)
+from db import (db_end_all_open_sessions, db_create_session,
+                db_insert_sets, get_conn, db_get_active_session, db_get_sets_by_session)
 from services import parse_entry_line, parse_set_token
-
-# CONSTANT for main menu
-MENU_TEXT = """
-    Select from the following options:
-        1) Start new session
-	    2) Add sets to active session
-	    3) View active session
-	    4) View exercise stats
-	    5) List sessions
-	    6) End active session
-	    7) Exit
-	"""
-VALID_OPTIONS = (1, 2, 3, 4, 5, 6, 7)
 
 # menu choices
 # 1) start new session
@@ -39,7 +25,6 @@ def start_new_session(user_id: int, notes=None) -> int:
     return session_id
 
 # 2) add set
-
 def add_set_ui(user_id):
     with get_conn() as conn:
         session_id = db_get_active_session(conn, user_id)
@@ -216,45 +201,3 @@ def closeout(user_id):
 
         else:
             return False
-
-
-# UI functions
-def get_username():
-    while True:
-        raw = input("Enter username: ")
-        if raw.strip(" ") != "":
-            username = normalize_username(raw)
-            return username
-        print("Empty string not accepted.")
-
-def get_menu_choice() -> int:
-    while True:
-        choice = input(MENU_TEXT)
-        if choice in ('1', '2', '3', '4', '5', '6', '7'):
-            return int(choice)
-        print("choice must be 1-7")
-
-def normalize_username(raw: str) -> str:
-    return " ".join(raw.strip().lower().split())
-
-def get_or_create_user(username: str) -> int:
-    username = normalize_username(username)
-    created_at = datetime.now().isoformat(timespec="seconds")
-
-    conn = get_conn()
-    cur = conn.cursor()
-
-    cur.execute("SELECT user_id FROM users WHERE username = ?;", (username,))
-    row = cur.fetchone()
-    if row is not None:
-        conn.close()
-        return row[0]
-
-    cur.execute(
-        "INSERT INTO users (username, created_at) VALUES (?, ?);",
-        (username, created_at)
-    )
-    user_id = cur.lastrowid
-    conn.commit()
-    conn.close()
-    return user_id

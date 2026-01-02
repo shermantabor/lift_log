@@ -156,6 +156,25 @@ def db_get_active_session(conn, user_id: int) -> Optional[int]:
 
     return session_id
 
+def db_get_user(conn, username:str) -> Optional[int]:
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM users WHERE username = ?;", (username,))
+    row = cur.fetchone()
+    if row is not None:
+        conn.close()
+        return row[0]
+    else:
+        return None
+
+def db_create_user(conn, created_at: str, username: str) -> int:
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO users (username, created_at) VALUES (?, ?);",
+        (username, created_at)
+    )
+    user_id = cur.lastrowid
+    return user_id
+
 def db_get_sets_by_session(conn, session_id: int) -> tuple[str, float, int, int, int]:
     cursor = conn.cursor()
     cursor.execute(
