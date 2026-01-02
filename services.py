@@ -8,7 +8,7 @@ from datetime import datetime
 from db import db_insert_sets, get_conn, db_get_active_session, db_create_user, db_get_user
 
 SetRow = tuple[float, int, int] # (weight, reps, is_1rm)
-# CONSTANT for main menu
+# CONSTANTS for main menu
 MENU_TEXT = """
     Select from the following options:
         1) Start new session

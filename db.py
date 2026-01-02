@@ -4,8 +4,7 @@ functions to interact with db
 
 from pathlib import Path
 import sqlite3
-from datetime import datetime
-from typing import Optional, Iterable, Sequence, Tuple
+from typing import Optional, Sequence
 
 # ensure data directory exists and use ABSOLUTE path
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,6 +13,11 @@ DATA_DIR.mkdir(exist_ok=True)
 DB_PATH = DATA_DIR / "lift_log.db"
 
 SetRow = tuple[float, int, int] # (weight, reps, is_1rm)
+
+def get_conn():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA foreign_keys = ON;")
+    return conn
 
 def db_init_db():
     # connect to the database (creates file if DNE)
@@ -74,11 +78,6 @@ def db_init_db():
     # commit changes and close
     conn.commit()
     conn.close()
-
-def get_conn():
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("PRAGMA foreign_keys = ON;")
-    return conn
 
 def db_create_session(conn, user_id, performed_at, notes) -> int:
     cur = conn.cursor()
