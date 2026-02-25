@@ -7,8 +7,8 @@ handling user interaction and control flow.
 
 from menu_options import (start_new_session, add_set_ui, view_active_session,
                           view_stats, view_sessions, end_active_session, closeout)
-from services import get_username, get_or_create_user, get_menu_choice
-from db import db_init_db
+from src.services.services import get_username, get_or_create_user, get_menu_choice
+from src.repository.db import db_init_db
 
 def main():
     '''

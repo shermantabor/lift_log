@@ -1,0 +1,36 @@
+from pydantic import BaseModel, Field
+from datetime import datetime
+from typing import List, Optional
+
+# USER SCHEMAS
+
+class UserCreate(BaseModel):
+    username: str = Field(..., min_length=1, max_length=50)
+
+class UserResponse(BaseModel):
+    user_id: int
+    username: str
+    created_at: datetime
+
+# SESSION SCHEMAS
+class SessionCreate(BaseModel):
+    performed_at: Optional[datetime] = None
+    notes: Optional[str] = Field(None, max_length=500)
+
+class SessionResponse(BaseModel):
+    session_id: int
+    user_id: int
+    performed_at: datetime
+    notes: Optional[str] = None
+    ended_at: Optional[datetime] = None
+
+# SET SCHEMAS
+class SetCreate(BaseModel):
+    exercise: str = Field(..., min_length=1, max_length=100)
+    weight: float = Field(..., ge=0)
+    reps: int = Field(..., ge=1)
+    is_1rm: bool = False
+
+# CONVENIENCE SCHEMAS
+class SetCreateRequest(BaseModel):
+    sets: List[SetCreate] = Field(..., min_length=1)

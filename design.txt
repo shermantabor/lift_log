@@ -1,0 +1,157 @@
+DATA SCHEMA:
+
+sessions
+ - user_id (unique, user provided -- lowercase, no spaces)
+ - session_id (unique, auto-incremented)
+ - performed_at (timestamp)
+ - notes (optional)
+
+sets
+ - sets.session_id (foreign key referencing sessions.session_id)
+ - set_id (unique, auto-incremented)
+ - exercise (e.g., ‘bench press’ -- store lowercase, trimmed, remove multiple spaces)
+ - weight (float, always in LB)
+ - reps
+ - set_index (per exercise within a session)
+ - is_1RM (BOOL) (can ONLY be True if # reps == 1)
+
+CLI FLOW:
+
+User selects from main menu:
+	1) Start new session
+	2) Add sets to active session
+	3) View session
+	4) View exercise stats
+	5) List sessions
+	6) End active session
+	7) Exit
+
+1. Start new session creates new session ID and automatically timestamps
+
+2. Add sets to active session prompts user entry.
+	FORMAT: bench press: 135x5, 155x4, 175x2
+
+3. View session
+	INPUT: session_id
+	RETURN:
+	- session timestamp
+	- notes (if exist)
+	- grouped by exercise
+	- sets in order
+	- per exercise volume
+	- total session volume
+
+4. View exercise stats
+	INPUT: exercise name
+	RETURN:
+	- max weight lifted
+	- best estimated 1RM (replace with highest 1RM == True if exists)
+	- most recent date when max weight occurred
+	- last 3 sessions where this exercise appeared
+5. List sessions:
+	RETURN:
+	- session_id
+	- date
+	- total volume
+	- number of sets
+
+6: End active session
+	User will be prompted to:
+	- add notes
+	- are you sure you want to complete the session?
+
+PARSING CONTRACT:
+Example shown to user: bench press: 135x3, 155x2, 175x1
+
+1. Exercise name
+	- Everything before the first : is the exercise name
+	- Leading/trailing whitespace is trimmed
+	- Stored normalized as: lowercase, single spaces between words
+	- Examples:
+		"Bench Press" → "bench press"
+		" bench press " → "bench press"
+2. Set list
+	- Everything after : is the set list
+	- Sets are separated by commas ,
+	- Whitespace around commas is ignored
+	- Valid:
+		135x3,155x2,175x1
+		135 x 3, 155x2 ,175 x1
+	- Invalid:
+		135x3 155x2   (no comma)
+	- If no colon is present, reject input with a helpful error:
+		“Invalid format. Expected: exercise: weight x reps, …”
+3. Weight × reps token
+	- For each set token:
+		Must contain exactly one x
+		Split on x (after trimming spaces)
+		Left side → weight
+		Right side → reps
+	- Rules:
+	(1) Weight parses to a positive number (float allowed)
+	(2) Reps parses to a positive integer
+	- Invalid tokens:
+		135
+		x5
+		135x
+		135x5x2
+		abcx5
+	- Behavior on invalid token:
+		Reject only that token
+		Log error message
+		Continue parsing remaining valid tokens
+
+4. 1RM prompt rule (integrated)
+	- After parsing each set:
+	- If reps == 1:
+	- Mark this set as a tested 1RM? (y/n):
+	- Response must be y or n
+	- Any other input → re-prompt
+
+5. Set ordering (set_index)
+	- Sets are assigned set_index in the order they appear in the input
+	- Index resets per exercise per session
+	- First parsed set → set_index = 1
+	- Example:
+		bench press: 135x3, 155x2, 175x1
+		Results in:
+			set_index 1 → 135x3
+			set_index 2 → 155x2
+			set_index 3 → 175x1
+
+6. What happens if the user enters multiple exercises in one session?
+	- error message: “Each Add sets command logs sets for one exercise only.”
+
+
+ADDITIONAL NOTES:
+
+1 rep max xists to distinguish tested maxes from incidental singles
+	Enforce these rules:
+	 - prompt when reps == 1
+	 - is_1RM can only be true if reps == 1
+	 - If reps != 1, force is_1RM = false
+	 - Default is_1RM = false unless the user explicitly marks it
+	
+
+Acceptance Tests (run these manually)
+
+
+Logging
+ - Enter 225x1, answer n → set saved with reps=1, is_1RM=false
+ - Enter 225x1, answer y → set saved with reps=1, is_1RM=true
+ - Enter 225x2 → no prompt, is_1RM=false
+ - Try to force is_1RM=true with reps!=1 → impossible
+
+Stats
+ - Exercise has tested 1RM → best 1RM equals heaviest tested single
+ - Exercise has singles but no tested 1RM → estimated 1RM is used
+ - Exercise has no singles → estimated 1RM still works
+ - Max weight ignores is_1RM
+
+UX
+ - Invalid input at 1RM prompt re-prompts
+ - Prompt appears only when reps == 1
+ - Ending a session does not delete data
+
+
+

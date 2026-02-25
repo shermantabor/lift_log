@@ -1,0 +1,12 @@
+
+1) Start new session
+
+2) Add sets: bench press: 135x3, 155x2, 175x1 (answer n then y on the prompts)
+
+3) View session by id
+
+4) View exercise stats for bench press
+
+5) End active session
+
+6) Exit, restart app, confirm data still there

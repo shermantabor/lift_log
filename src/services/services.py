@@ -8,7 +8,7 @@ database layer and user-facing workflows.
 from typing import Callable
 import sqlite3
 from datetime import datetime
-from db import db_insert_sets, get_conn, db_get_active_session, db_create_user, db_get_user
+from src.repository.db import db_insert_sets, get_conn, db_get_active_session, db_create_user, db_get_user
 
 SetRow = tuple[float, int, int] # (weight, reps, is_1rm)
 # CONSTANTS for main menu

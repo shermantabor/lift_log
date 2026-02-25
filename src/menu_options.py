@@ -7,9 +7,9 @@ to their corresponding application behaviors.
 
 import sqlite3
 from datetime import datetime
-from db import (db_end_all_open_sessions, db_create_session,
-                db_insert_sets, get_conn, db_get_active_session, db_get_sets_by_session)
-from services import parse_entry_line, parse_set_token
+from src.repository.db import (db_end_all_open_sessions, db_create_session,
+                               db_insert_sets, get_conn, db_get_active_session, db_get_sets_by_session)
+from src.services.services import parse_entry_line, parse_set_token
 
 # menu choices
 # 1) start new session
