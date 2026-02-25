@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from src.services.errors import BadRequestError, ConflictError, NotFoundError
 from src.api.schemas import SetCreateRequest
-from src.services.api_services import add_sets_to_active_session
+from src.services.api_services import add_sets_to_active_session, get_sets_for_session
 
 router = APIRouter(tags=["sets"])
 
@@ -24,3 +24,6 @@ def post_sets(user_id: int, payload: SetCreateRequest):
     except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
+@router.get("/sessions/{session_id}/sets")
+def read_sets(session_id: int):
+    return get_sets_for_session(session_id)

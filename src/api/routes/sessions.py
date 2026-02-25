@@ -1,6 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from src.api.schemas import SessionCreate, SessionResponse
-from src.services.api_services import create_session, end_active_session
+from src.services.api_services import (
+    create_session,
+    end_active_session,
+    get_active_session,
+    get_sessions_for_user
+)
 from src.services.errors import BadRequestError, ConflictError, NotFoundError
 
 router = APIRouter(tags=["sessions"])
@@ -27,3 +32,14 @@ def end_session(user_id: int):
         raise HTTPException(status_code=409, detail=str(e))
     except NotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/users/{user_id}/sessions/active")
+def read_active_session(user_id: int):
+    try:
+        return get_active_session(user_id)
+    except NotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/users/{user_id}/sessions")
+def read_sessions(user_id: int):
+    return get_sessions_for_user(user_id)

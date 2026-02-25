@@ -9,9 +9,12 @@ from src.repository.db import (
     db_get_active_session,
     db_end_all_open_sessions,
     db_insert_sets,
+    db_get_active_session_row,
+    db_get_sessions_for_user,
+    db_get_active_session,
+    db_get_sets_for_session,
 )
-from src.services.errors import BadRequestError, ConflictError
-
+from src.services.errors import BadRequestError, ConflictError, NotFoundError
 
 def now_iso() -> str:
     return datetime.now().isoformat(timespec="seconds")
@@ -87,4 +90,31 @@ def add_sets_to_active_session(
 
     return {"session_id": session_id, "exercise": exercise_norm, "sets_inserted": inserted}
 
+# for GET requests
 
+def get_active_session(user_id: int):
+    with get_conn() as conn:
+        row = db_get_active_session_row(conn, user_id)
+
+        if row is None:
+            raise NotFoundError("No active session found for this user")
+
+        return dict(row)
+
+def get_sessions_for_user(user_id: int):
+    with get_conn() as conn:
+        rows = db_get_sessions_for_user(conn, user_id)
+
+        if rows is None:
+            raise NotFoundError("No active sessions found for this user")
+
+        return [dict(r) for r in rows]
+
+def get_sets_for_session(session_id: int):
+    with get_conn() as conn:
+        rows = db_get_sets_for_session(conn, session_id)
+
+        if rows is None:
+            return []
+
+        return [dict(r) for r in rows]

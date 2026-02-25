@@ -209,3 +209,34 @@ def db_get_sets_by_session(conn, session_id: int) -> tuple[str, float, int, int,
 
     rows = cursor.fetchall()
     return rows
+
+# getters for API GET calls
+def db_get_active_session_row(conn, user_id: int):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT session_id, user_id, performed_at, notes, ended_at
+        FROM sessions
+        WHERE user_id = ? AND ended_at IS NULL
+        LIMIT 1;
+    """, (user_id,))
+    return cur.fetchone()
+
+def db_get_sessions_for_user(conn, user_id: int):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT session_id, user_id, performed_at, notes, ended_at
+        FROM sessions
+        WHERE user_id = ?
+        ORDER BY performed_at DESC;
+    """, (user_id,))
+    return cur.fetchall()
+
+def db_get_sets_for_session(conn, session_id: int):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT exercise, set_id, exercise, weight, reps, set_index, is_1rm
+        FROM sets
+        WHERE session_id = ?
+        ORDER BY exercise, set_index;
+    """, (session_id,))
+    return cur.fetchall()
