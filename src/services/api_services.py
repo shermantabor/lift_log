@@ -1,6 +1,8 @@
 import sqlite3
 from datetime import datetime
 
+import bcrypt
+
 from src.repository.db import (
     get_conn,
     db_create_user,
@@ -19,17 +21,29 @@ from src.services.errors import BadRequestError, ConflictError, NotFoundError
 def now_iso() -> str:
     return datetime.now().isoformat(timespec="seconds")
 
-def create_user(username: str) -> dict:
+def create_user(username: str, password: str) -> dict:
     created_at = now_iso()
+    password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     with get_conn() as conn:
         # if exists, treat as conflict
         existing = db_get_user(conn, username)
         if existing is not None:
-            raise ConflictError("User already exists with this username")
+            raise ConflictError("Username already taken.")
 
-        user_id = db_create_user(conn, created_at, username)
+        user_id = db_create_user(conn, created_at, username, password_hash)
         conn.commit()
     return {"user_id": user_id, "username": username, "created_at": created_at}
+
+def login_user(username: str, password: str) ->dict:
+    with get_conn() as conn:
+        row = db_get_user(conn, username)
+        if row is None:
+            raise NotFoundError("No account found with that username.")
+        user_id, password_hash = row["user_id"], row["password_hash"]
+        if not bcrypt.checkpw(password.encode(), password_hash.encode()):
+            raise BadRequestError("Password incorrect.")
+        return {"user_id": user_id, "username": username}
+
 
 def create_session(user_id: int, performed_at: str | None, notes :str | None) -> dict:
     performed_at = performed_at or now_iso()

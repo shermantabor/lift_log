@@ -1,0 +1,9 @@
+annotated-types==0.7.0
+anyio==4.12.1
+bcrypt==5.0.0
+fastapi==0.133.1
+pydantic==2.12.5
+pydantic_core==2.41.5
+starlette==0.52.1
+typing_extensions==4.15.0
+uvicorn==0.34.0

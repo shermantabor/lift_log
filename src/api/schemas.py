@@ -6,11 +6,16 @@ from typing import List, Optional
 
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
+    password: str = Field(..., min_length=6)
+
+class LoginRequest(BaseModel):
+    username: str = Field(..., min_length=1, max_length=50)
+    password: str = Field(..., min_length=1)
 
 class UserResponse(BaseModel):
     user_id: int
     username: str
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
 # SESSION SCHEMAS
 class SessionCreate(BaseModel):

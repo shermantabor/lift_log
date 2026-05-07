@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Lift Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f5f4f1;
+      --surface:   #ffffff;
+      --surface2:  #edecea;
+      --border:    #d8d6d0;
+      --accent:    #2563eb;
+      --accent-dim:#1d4ed8;
+      --status: #46c632;
+      --text:      #1a1917;
+      --muted:     #8a8780;
+      --danger:    #dc2626;
+      --mono: 'Inter', sans-serif;
+      --display: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      grid-template-rows: 48px 1fr;
+    }
+
+    /* ── TOP BAR ─────────────────────────────────────── */
+    header {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+    }
+
+    .logo {
+      font-family: var(--display);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .logo span { color: var(--text); }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .user-pill strong { color: var(--text); font-weight: 500; }
+
+    /* ── SIDEBAR ─────────────────────────────────────── */
+    nav {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 16px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      cursor: pointer;
+      color: var(--muted);
+      border-left: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .nav-item:hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(37, 99, 235, 0.06);
+    }
+
+    .nav-icon {
+      width: 16px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 16px;
+    }
+
+    .session-badge {
+      margin-left: auto;
+      background: var(--status);
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 2px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── MAIN CONTENT ────────────────────────────────── */
+    main {
+      overflow-y: auto;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .page-title {
+      font-family: var(--display);
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-top: 14px;
+    }
+
+    .page-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── ACTIVE SESSION PANEL ────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-top: 14px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-title {
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--status);
+      display: inline-block;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .btn:hover { color: var(--text); border-color: var(--muted); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); color: #ffffff; }
+
+    .btn-danger { color: var(--danger); border-color: var(--danger); }
+    .btn-danger:hover { background: rgba(224, 82, 82, 0.1); }
+
+    /* ── INPUT ROW ───────────────────────────────────── */
+    .input-row td {
+      padding: 10px 18px;
+      border-bottom: 2px solid var(--border);
+      background: rgba(37, 99, 235, 0.03);
+    }
+
+    .input-row input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 6px 8px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s;
+    }
+
+    .input-row input:focus { border-color: var(--accent); }
+    .input-row input::placeholder { color: var(--muted); }
+
+    /* ── SETS TABLE ──────────────────────────────────── */
+    .sets-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .sets-table th {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    .sets-table td {
+      padding: 11px 18px;
+      border-bottom: 1px solid rgba(46, 46, 46, 0.5);
+      vertical-align: middle;
+    }
+
+    .sets-table tr:last-child td { border-bottom: none; }
+
+    .sets-table tr:hover td { background: rgba(0,0,0,0.02); }
+
+    .exercise-tag {
+      display: inline-block;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .one-rm-badge {
+      display: inline-block;
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: var(--accent);
+      border-radius: 2px;
+      padding: 1px 6px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    .set-index {
+      color: var(--muted);
+      font-size: 11px;
+      width: 28px;
+    }
+
+    .weight-val {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    /* ── LOGIN SCREEN (hidden by default) ────────────── */
+    .login-overlay {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-overlay.hidden { display: none }
+
+    .login-box {
+      width: 360px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 36px;
+    }
+
+    .login-logo {
+      font-family: var(--display);
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .login-logo span { color: var(--text); }
+
+    .login-tagline {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 28px;
+    }
+
+    .login-label {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .login-box input {
+      width: 100%;
+      height: 26px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+
+    .login-box .btn-primary {
+      width: 100%;
+      padding: 9px;
+      font-size: 12px;
+    }
+
+    .login-note {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    /* ── EMPTY STATE ─────────────────────────────────── */
+    .empty-state {
+      padding: 40px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .empty-state p {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* ── HAMBURGER ───────────────────────────────────── */
+    .hamburger {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      line-height: 1;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .hamburger:hover { color: var(--text); }
+
+    /* ── NAV OVERLAY (mobile backdrop) ──────────────── */
+    .nav-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 40;
+    }
+    .nav-overlay.visible { display: block; }
+
+    /* ── MOBILE STYLES ───────────────────────────────── */
+    @media (max-width: 640px) {
+
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: 48px 1fr;
+      }
+
+      /* Sidebar slides in over content */
+      nav {
+        position: fixed;
+        top: 48px;
+        left: 0;
+        bottom: 0;
+        width: 240px;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        border-right: 1px solid var(--border);
+      }
+
+      nav.open {
+        transform: translateX(0);
+      }
+
+      main {
+        padding: 16px 12px;
+        gap: 16px;
+      }
+
+      /* Page header stacks on mobile */
+      .page-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .page-title { font-size: 24px; }
+
+      /* Hide the user pill on small screens to save space */
+      .user-pill { display: none; }
+
+      /* ── TABLE: tighten padding on mobile ─────────── */
+      .sets-table th,
+      .sets-table td { padding: 9px 10px; }
+
+      /* Shrink the # column */
+      .set-index { width: 20px; font-size: 10px; }
+
+      /* Exercise tag wraps instead of overflows */
+      .exercise-tag { font-size: 11px; }
+
+      /* Weight value slightly smaller */
+      .weight-val { font-size: 13px; }
+
+      /* Input row: tighter inputs */
+      .input-row input { font-size: 12px; padding: 5px 6px; }
+    }
+
+    /* -- MODAL ----------------------------------------- */
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 200;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-backdrop.visible {
+        display: flex;
+    }
+
+    .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 28px;
+        width: 320px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    .modal-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .modal-body {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+    
+    /* ── SCROLLBAR ───────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+    <!-- LOGIN OVERLAY ------>
+     <div class="login-overlay" id="login-overlay">
+        <div class="login-box">
+            <div class="login-logo">Lift<span>Log</span></div>
+            <div class="login-tagline">track your lifts. see your progress.</div>
+            <label class="login-label" for="login-username">Username</label>
+            <input type="text" id="login-username" placeholder="e.g. sherman" autocomplete="username">
+            <label class="login-label" for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+            <div id="login-error" style="color: var(--danger); font-size: 11px; margin-bottom: 10px; min-height: 16px;"></div>
+            <button class="btn btn-primary" id="login-btn">Log In</button>
+            <div class="login-note">
+            No account? <a href="#" id="switch-to-register" style="color: var(--accent);">Create one</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL ------>
+    <div class="modal-backdrop" id="modal-backdrop">
+        <div class="modal">
+            <div class="modal-title" id="modal-title"></div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-actions">
+                <button class="btn" id="modal-cancel">Cancel</button>
+                <button class="btn btn-primary" id="modal-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP BAR ---->
+     <header>
+        <button class="hamburger" id="nav-toggle" aria-label="Toggle menu">&#9776;</button>
+        <div class="logo">Lift<span>Log</span></div>
+        <div class="header-right">
+        <div class="user-pill">logged in as <strong id="header-username"></strong></div>
+            <button class="btn" id="logout-btn">Log out</button>
+        </div>
+     </header>
+
+    <!-- SIDEBAR -->
+     <div class="nav-overlay" id="nav-overlay"></div>
+     <nav id="sidebar">
+        <div class="nav-section-label">Menu</div>
+
+        <a class="nav-item active" href="#">
+            <span class="nav-icon">▣</span> Active Session
+            <span class="session-badge">Live</span>
+        </a>
+        <a class="nav-item" href="#">
+            <span class="nav-icon">≡</span> Sessions
+        </a>
+        <a class="nav-item" href="#">
+        <span class="nav-icon">◈</span> Stats
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-section-label">Session</div>
+        <a class="nav-item" href="#" id="nav-new-session">
+            <span class="nav-icon">+</span> New Session
+        </a>
+        <a class="nav-item btn-danger" href="#" id="nav-end-session" style="color: var(--danger);">
+            <span class="nav-icon">■</span> End Session
+        </a>
+     </nav>
+
+     <!--MAIN CONTENT-->
+     <main>
+
+        <!--Page header-->
+        <div class="page-header">
+            <div>
+                <div class="page-title">Lift Log</div>
+                <div class="page-subtitle" id="session-subtitle"></div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn"> Add notes</button>
+                <button class="btn btn-danger" id="btn-end-session" style="display:none;">End session</button>
+            </div>
+        </div>
+
+        <!-- No session state -->
+        <div id="no-session-state">
+        <div class="empty-state">
+            <div class="empty-state-icon">🏋️</div>
+            <p>No active session</p>
+            <button class="btn btn-primary" id="btn-start-session" style="margin-top: 16px; padding: 10px 28px; font-size: 13px;">
+            Start Session
+            </button>
+        </div>
+        </div>
+
+        <!--Active session panel -->
+        <div class="panel" id="session-panel">
+            <div class="panel-header">
+            <div class="panel-title">
+            <span class="status-dot"></span>Log Sets
+            </div>
+        </div>
+
+        <!-- Table: INPUT row & LOGGED sets-->
+         <table class="sets-table">
+            <thead>
+                <tr>
+                    <th style="width:30px;">#</th>
+                    <th>Exercise</th>
+                    <th style="width: 20px;">Weight</th>
+                    <th style="width: 50px;">Reps</th>
+                    <th style="width: 20px;"></th>
+                </tr>
+            </thead>
+            <tbody id="sets-tbody">
+                <!--Input row-->
+                <tr class="input-row">
+                    <td class="set-index" style="color: var(--accent);">+</td>
+                    <td><input type="text" placeholder="bench press" id="inp-exercise" style="width: 100%;"></td>
+                    <td><input type="number" placeholder="225" id="inp-weight" min="0" step="5" style="width: 100%;"></td>
+                    <td><input type="number" placeholder="5" id="inp-reps" min="1" step="1" style="width: 100%;"></td>
+                    <td style="width: 100px;"><button class="btn btn-primary" id="btn-log-set" style="width: 100%; padding: 6px 0;">Log</button></td>
+                </tr>
+
+                <!--Real rows rendered here by JS-->
+            </tbody>
+         </table>
+        </div>
+     </main>
+
+    <script>
+        const API = 'http://10.0.0.92:8000';
+        let currentUser    = null;
+        let currentSession = null;
+        let authMode       = 'login';
+
+        const loginOverlay   = document.getElementById('login-overlay');
+        const loginUsername  = document.getElementById('login-username');
+        const loginPassword  = document.getElementById('login-password');
+        const loginBtn       = document.getElementById('login-btn');
+        const loginError     = document.getElementById('login-error');
+        const switchLink     = document.getElementById('switch-to-register');
+        const headerUsername = document.getElementById('header-username');
+        const logoutBtn      = document.getElementById('logout-btn');
+        const navToggle      = document.getElementById('nav-toggle');
+
+        const toggle            = document.getElementById('nav-toggle');
+        const sidebar           = document.getElementById('sidebar');
+        const navOverlay        = document.getElementById('nav-overlay');
+        const navNewSession     = document.getElementById('nav-new-session');
+        const navEndSession     = document.getElementById('nav-end-session');
+        const sessionSubtitle   = document.getElementById('session-subtitle');
+        const btnEndSession     = document.getElementById('btn-end-session');
+        const btnLogSet         = document.getElementById('btn-log-set');
+        const inpExercise       = document.getElementById('inp-exercise');
+        const inpWeight         = document.getElementById('inp-weight');
+        const inpReps           = document.getElementById('inp-reps');
+        const setsTbody         = document.getElementById('sets-tbody');
+        const modalBackdrop     = document.getElementById('modal-backdrop');
+        const modalTitle        = document.getElementById('modal-title');
+        const modalBody         = document.getElementById('modal-body');
+        const modalConfirm      = document.getElementById('modal-confirm');
+        const modalCancel       = document.getElementById('modal-cancel');
+        const noSessionState    = document.getElementById('no-session-state');
+        const sessionPanel      = document.getElementById('session-panel');
+        const btnStartSession   = document.getElementById('btn-start-session');
+
+        function refreshSessionUI() {
+            if (currentSession) {
+                const time = new Date(currentSession.performed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                sessionSubtitle.textContent = `started ${time}`;
+                btnEndSession.style.display = 'inline-block';
+                navNewSession.style.display = 'none';
+                navEndSession.style.display = 'flex';
+                noSessionState.style.display = 'none';
+                sessionPanel.style.display   = 'block';
+            } else {
+                sessionSubtitle.textContent  = '';
+                btnEndSession.style.display  = 'none';
+                navNewSession.style.display  = 'flex';
+                navEndSession.style.display  = 'none';
+                noSessionState.style.display = 'block';
+                sessionPanel.style.display   = 'none';
+                setsTbody.querySelectorAll('tr:not(.input-row)').forEach(r => r.remove());
+            }
+        }
+
+        function renderSetRow(set, index) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="set-index">${index}</td>
+                <td><span class="exercise-tag">${set.exercise}</span></td>
+                <td class="weight-val">${set.weight} <span style="color:var(--muted);font-size:11px;">lb</span></td>
+                <td>${set.reps}${set.is_1rm ? '<span class="one-rm-badge">1RM</span>' : ''}</td>
+                <td></td>
+            `;
+            setsTbody.appendChild(tr);
+        }
+
+        function showModal(title, body, confirmLabel, confirmClass, cancelLabel = 'Cancel') {
+            return new Promise(resolve => {
+                modalTitle.textContent   = title;
+                modalBody.textContent    = body;
+                modalConfirm.textContent = confirmLabel;
+                modalConfirm.className   = `btn ${confirmClass}`;
+                modalCancel.textContent = cancelLabel;
+                modalBackdrop.classList.add('visible');
+
+                function onConfirm() { cleanup(); resolve(true); }
+                function onCancel()  { cleanup(); resolve(false); }
+
+                function cleanup() {
+                modalBackdrop.classList.remove('visible');
+                modalConfirm.removeEventListener('click', onConfirm);
+                modalCancel.removeEventListener('click', onCancel);
+                }
+
+                modalConfirm.addEventListener('click', onConfirm);
+                modalCancel.addEventListener('click', onCancel);
+                modalBackdrop.addEventListener('click', e => {
+                if (e.target === modalBackdrop) onCancel();
+                }, { once: true });
+            });
+        }
+
+        async function startSession() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`${API}/users/${currentUser.user_id}/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.detail || 'Could not start session.'); return; }
+
+                currentSession = { session_id: data.session_id, performed_at: data.performed_at };
+                refreshSessionUI();
+            } catch (err) {
+                alert('Coult not reach server.');
+                console.error(err);
+            }
+        }
+
+        async function endSession() {
+            if (!currentUser || !currentSession) return;
+            const confirmed = await showModal(
+                'End session?',
+                'This will close your active session. You can start a new one anytime.',
+                'End session',
+                'btn-danger'
+            );
+            if (!confirmed) return;
+            
+            try {
+                const res = await fetch(`${API}/users/${currentUser.user_id}/sessions/end`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.detail || 'Could not end session.'); return; }
+
+                currentSession = null;
+                refreshSessionUI();
+            } catch (err) {
+                alert('Could not reach server.');
+                console.error(err);
+            }
+        }
+
+        async function logSet() {
+            if (!currentUser || !currentSession) { alert('Start a session first.'); return; }
+
+            const exercise = inpExercise.value.trim();
+            const weight = parseFloat(inpWeight.value);
+            const reps = parseInt(inpReps.value);
+
+            if (!exercise) { alert('Enter an exercise name.'); return; }
+            if (!weight) { alert('Enter a weight.'); return; }
+            if (!reps) { alert('Enter reps.'); return; }
+
+            let is1rm = false;
+            if (reps == 1) {
+                is1rm = await showModal(
+                    'Mark as 1RM?',
+                    `${exercise} — ${weight} lb × ${reps} rep${reps > 1 ? 's' : ''}. Was this a one-rep max attempt?`,
+                    'Yes, 1RM',
+                    'btn-primary',
+                    'Not a 1RM'
+                );
+            }
+            
+            btnLogSet.disabled = true;
+            btnLogSet.textContent = '...';
+
+            try {
+                const res = await fetch(`${API}/users/${currentUser.user_id}/sets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sets: [{ exercise, weight, reps, is_1rm: is1rm }]
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.detail || 'Could not log set.'); return; }
+
+                const rowCount = setsTbody.querySelectorAll('tr:not(.input-row)').length;
+                renderSetRow({ exercise, weight, reps, is_1rm: is1rm }, rowCount + 1);
+
+                inpWeight.value = '';
+                inpReps.value = '';
+                inpWeight.focus();
+            } catch (err) {
+                alert('Could not reach server.');
+                console.error(err);
+            } finally {
+                btnLogSet.disabled = false;
+                btnLogSet.textContent = 'Log';
+            }
+        }
+
+        async function restoreSession(user_id) {
+            try {
+                const res = await fetch(`${API}/users/${user_id}/sessions/active`);
+                if (!res.ok) return;
+
+                const data = await res.json();
+                currentSession = { session_id: data.session_id, performed_at: data.performed_at };
+
+                const setsRes = await fetch(`${API}/sessions/${data.session_id}/sets`);
+                if (setsRes.ok) {
+                    const sets = await setsRes.json();
+                    sets.forEach((set, i) => renderSetRow(set, i + 1));
+                }
+
+                refreshSessionUI();
+            } catch (err) {
+                console.error('Could not restore session:', err);
+            }
+        }
+
+        async function logoutHandler() {
+            if (!currentUser) return;
+            const confirmed = await showModal(
+                'Log out?',
+                'This will log out current user.',
+                'Log out',
+                'btn-primary'
+            );
+            if (!confirmed) return;
+            
+            currentUser = null;
+            localStorage.removeItem('liftlog_user');
+            currentSession = null;
+            loginUsername.value = '';
+            loginPassword.value = '';
+            loginError.textContent = '';
+            authMode = 'login';
+            loginBtn.textContent = 'Log In';
+            switchLink.textContent = 'Create one';
+            refreshSessionUI();
+            loginOverlay.classList.remove('hidden');         
+        }
+
+        // -- EVENT LISTENERS ---------------
+        navNewSession.addEventListener('click', e => { e.preventDefault(); startSession(); closeNav(); });
+        btnStartSession.addEventListener('click', startSession);
+        navEndSession.addEventListener('click', e => { e.preventDefault(); endSession(); closeNav(); })
+        btnEndSession.addEventListener('click', endSession);
+        btnLogSet.addEventListener('click', logSet);
+        inpReps.addEventListener('keydown', e => { if (e.key == 'Enter') logSet(); });
+
+        // -- AUTH --------------------------
+        switchLink.addEventListener('click', e => {
+            e.preventDefault();
+            authMode = authMode === 'login' ? 'register' : 'login';
+            loginError.textContent = '';
+            if (authMode === 'register') {
+                loginBtn.textContent = 'Create Account';
+                switchLink.textContent = 'Back to login';
+                loginPassword.placeholder = 'choose a password';
+                loginPassword.autocomplete = 'new-password';
+            } else {
+                loginBtn.textContent = 'Log In';
+                switchLink.textContent = 'Create One';
+                loginPassword.placeholder = '••••••••';
+                loginPassword.autocomplete = 'current-password';
+            }
+        });
+
+        async function handleSubmit() {
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value;
+            if (!username) { loginError.textContent = 'Please enter a username.'; return; }
+            if (!password) { loginError.textContent = 'Please enter a password.'; return; }
+            if (authMode === 'register' && password.length < 6) {
+                loginError.textContent = 'Password must be at least 6 characters.'; return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = authMode === 'login' ? ' Logging in...' : 'Creating account....';
+            loginError.textContent = '';
+
+            try {
+                const res = await fetch(`${API}${authMode === 'login' ? '/login' : '/users'}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (!res.ok) { loginError.textContent = data.detail || 'Something went wrong.'; return; 
+                }
+
+                const loginExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+                currentUser = { user_id: data.user_id, username: data.username, expiry: loginExpiry };
+                localStorage.setItem('liftlog_user', JSON.stringify(currentUser));
+                headerUsername.textContent = data.username;
+                document.querySelector('.page-title').innerHTML = `Let's go, ${data.username} 💪`;
+                loginOverlay.classList.add('hidden');
+                loginPassword.value = '';
+
+                // Check for existing session immediately after login
+                await restoreSession(currentUser.user_id);
+                refreshSessionUI();
+            } catch (err) {
+                loginError.textContent = 'Could not reach server. Is your backend running?';
+                console.error(err);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = authMode === 'login' ? 'login' : 'Create Account';
+            }
+            setTimeout(() => window.scrollTo(0, 0), 50);
+        }
+
+        loginBtn.addEventListener('click', handleSubmit);
+        loginUsername.addEventListener('keydown', e => { if (e.key === 'Enter') loginPassword.focus(); });
+        loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
+
+        logoutBtn.addEventListener('click', logoutHandler);
+
+        // -- Nav (MOBILE) ------------------
+        function openNav() { sidebar.classList.add('open'); navOverlay.classList.add('visible'); }
+        function closeNav() { sidebar.classList.remove('open'); navOverlay.classList.remove('visible') }
+        navToggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeNav() : openNav());
+        navOverlay.addEventListener('click', closeNav);
+        sidebar.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', closeNav));
+
+        // -- RESTORE USER from LOCAL STORAGE -----------
+        const saved = localStorage.getItem('liftlog_user');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed.expiry && Date.now() < parsed.expiry) {
+                currentUser = parsed;
+                headerUsername.textContent = currentUser.username;
+                document.querySelector('.page-title').innerHTML = `Let's go, ${data.username} 💪`;
+                loginOverlay.classList.add('hidden');
+                restoreSession(currentUser.user_id);
+            } else {
+                localStorage.removeItem('liftlog_user');
+            }
+        }
+        
+        // -- INIT --------------------------
+        refreshSessionUI();
+    </script>
+</body>
+</html>

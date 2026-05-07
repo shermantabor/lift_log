@@ -41,6 +41,7 @@ def db_init_db():
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
                 created_at TEXT NOT NULL
             );
         ''')
@@ -175,20 +176,19 @@ def db_get_active_session(conn, user_id: int) -> Optional[int]:
 
     return session_id
 
-def db_get_user(conn, username: str) -> Optional[int]:
-    """Return user_id for username if it exists, else None."""
+def db_get_user(conn, username: str) -> Optional[tuple]:
+    """Return (user_id, password hash) for username if it exists, else None."""
     cur = conn.cursor()
-    cur.execute("SELECT user_id FROM users WHERE username = ?;", (username,))
-    row = cur.fetchone()
-    return row[0] if row is not None else None
+    cur.execute("SELECT user_id, password_hash FROM users WHERE username = ?;", (username,))
+    return cur.fetchone()
 
-def db_create_user(conn, created_at: str, username: str) -> int:
+def db_create_user(conn, created_at: str, username: str, password_hash: str) -> int:
     '''create new username/id combo in db'''
 
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO users (username, created_at) VALUES (?, ?);",
-        (username, created_at)
+        "INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?);",
+        (username, password_hash, created_at)
     )
     user_id = cur.lastrowid
     return user_id
