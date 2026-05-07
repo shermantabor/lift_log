@@ -7,6 +7,7 @@ operations for storing and retrieving lift data.
 
 from pathlib import Path
 import sqlite3
+import os
 from typing import Optional, Sequence
 
 TEST_DB_PATH = None
@@ -14,7 +15,7 @@ TEST_DB_PATH = None
 BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
-DB_PATH = DATA_DIR / "lift_log.db"
+DB_PATH = os.environ.get('DB_PATH', 'data/lift_log.db')
 
 # variable to store set entries and prep them for db entry
 SetRow = tuple[float, int, int] # (weight, reps, is_1rm)
