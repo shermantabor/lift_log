@@ -1,0 +1,9 @@
+-- UI:
+    build sessions page
+    build stats page
+
+-- data:
+    select ex from list of options, or add new
+    think about best UX
+
+-- add social
