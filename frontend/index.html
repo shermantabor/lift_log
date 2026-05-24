@@ -1159,6 +1159,7 @@
                 sessionPanel.style.display   = 'none';
                 setsTbody.querySelectorAll('tr:not(.input-row)').forEach(r => r.remove());
             }
+            document.getElementById('live-badge').style.display = currentSession ? 'inline-block' : 'none';
         }
 
         function renderSetRow(set, index) {
