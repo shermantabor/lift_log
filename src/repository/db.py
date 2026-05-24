@@ -235,9 +235,32 @@ def db_get_sessions_for_user(conn, user_id: int):
 def db_get_sets_for_session(conn, session_id: int):
     cur = conn.cursor()
     cur.execute("""
-        SELECT exercise, set_id, exercise, weight, reps, set_index, is_1rm
+        SELECT exercise, set_id, weight, reps, set_index, is_1rm
         FROM sets
         WHERE session_id = ?
         ORDER BY exercise, set_index;
     """, (session_id,))
+    return cur.fetchall()
+
+def db_get_exercises_for_user(conn, user_id: int):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT DISTINCT sets.exercise
+        FROM sets
+        JOIN sessions ON sets.session_id = sessions.session_id
+        WHERE sessions.user_id = ?
+        ORDER BY sets.exercise;
+    """, (user_id,))
+    return cur.fetchall()
+
+def db_get_sets_for_exercise(conn, exercise: str, user_id: int):
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT sets.set_id, sets.weight, sets.reps, sets.is_1rm, sessions.performed_at
+        FROM sets
+        JOIN sessions ON sets.session_id = sessions.session_id
+        WHERE sessions.user_id = ?
+        AND sets.exercise = ?
+        ORDER BY sessions.performed_at ASC;
+    """, (user_id, exercise))
     return cur.fetchall()

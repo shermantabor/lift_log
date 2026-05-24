@@ -14,7 +14,7 @@ from src.repository.db import (
     db_get_active_session_row,
     db_get_sessions_for_user,
     db_get_active_session,
-    db_get_sets_for_session,
+    db_get_sets_for_session, db_get_exercises_for_user, db_get_sets_for_exercise,
 )
 from src.services.errors import BadRequestError, ConflictError, NotFoundError
 
@@ -131,4 +131,18 @@ def get_sets_for_session(session_id: int):
         if rows is None:
             return []
 
+        return [dict(r) for r in rows]
+
+def get_exercises_for_user(user_id: int):
+    with get_conn() as conn:
+        rows = db_get_exercises_for_user(conn, user_id)
+
+        if rows is None:
+            return []
+
+        return [row["exercise"] for row in rows]
+
+def get_sets_for_exercise(user_id: int, exercise: str):
+    with get_conn() as conn:
+        rows = db_get_sets_for_exercise(conn, user_id, exercise)
         return [dict(r) for r in rows]

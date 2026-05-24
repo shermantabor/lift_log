@@ -6,6 +6,7 @@
   <title>Lift Log</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -590,7 +591,209 @@
         gap: 8px;
         justify-content: flex-end;
     }
-    
+
+    /* ── STATS PAGE ──────────────────────────────────── */
+    .stats-search-wrap {
+      position: relative;
+      margin-top: 14px;
+    }
+
+    .stats-search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .stats-search-input:focus { border-color: var(--accent); }
+    .stats-search-input::placeholder { color: var(--muted); }
+
+    .stats-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 3px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+      z-index: 999;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .stats-dropdown.open { display: block; }
+
+    .stats-dropdown-item {
+      padding: 9px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid var(--surface2);
+    }
+
+    .stats-dropdown-item:last-child { border-bottom: none; }
+
+    .stats-dropdown-item:hover,
+    .stats-dropdown-item.kbd-active {
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--accent);
+    }
+
+    .stats-dropdown-empty {
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .stat-cards-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px 16px;
+    }
+
+    .stat-card-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-card-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-card-unit {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .stat-card-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .stat-card-delta {
+      font-size: 11px;
+      color: #46c632;
+      margin-top: 5px;
+    }
+
+    .estimated-badge {
+      display: inline-block;
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: var(--accent);
+      border-radius: 2px;
+      padding: 1px 6px;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .stats-chart-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 18px 20px;
+      margin-top: 20px;
+    }
+
+    .stats-chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .stats-chart-title {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .chart-toggle-group {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .chart-toggle-btn {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .chart-toggle-btn:first-child { border-right: 1px solid var(--border); }
+
+    .chart-toggle-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .stats-pr-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .pr-badge {
+      display: inline-block;
+      background: rgba(70, 198, 50, 0.15);
+      border: 1px solid rgba(70, 198, 50, 0.4);
+      color: #46c632;
+      border-radius: 2px;
+      padding: 1px 6px;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .stats-empty {
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .stats-empty-icon { font-size: 28px; opacity: 0.35; margin-bottom: 12px; }
+    .stats-empty p { font-size: 12px; line-height: 1.6; }
+
     /* ── SCROLLBAR ───────────────────────────────────── */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -615,7 +818,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- MODAL ------>
     <div class="modal-backdrop" id="modal-backdrop">
         <div class="modal">
@@ -643,14 +846,14 @@
      <nav id="sidebar">
         <div class="nav-section-label">Menu</div>
 
-        <a class="nav-item active" href="#">
+        <a class="nav-item active" href="#" id="nav-active-session">
             <span class="nav-icon">▣</span> Active Session
-            <span class="session-badge">Live</span>
+            <span class="session-badge" id="live-badge">Live</span>
         </a>
-        <a class="nav-item" href="#">
+        <a class="nav-item" href="#" id="nav-sessions">
             <span class="nav-icon">≡</span> Sessions
         </a>
-        <a class="nav-item" href="#">
+        <a class="nav-item" href="#" id="nav-stats">
         <span class="nav-icon">◈</span> Stats
         </a>
 
@@ -689,6 +892,59 @@
             Start Session
             </button>
         </div>
+        </div>
+
+        <!-- STATS PAGE -->
+        <div id="stats-page" style="display:none;">
+          <div class="stats-search-wrap">
+            <input type="text" class="stats-search-input" id="stats-exercise-input"
+                   placeholder="Search an exercise…" autocomplete="off">
+            <div class="stats-dropdown" id="stats-dropdown"></div>
+          </div>
+
+          <!-- Empty prompt (before selection) -->
+          <div id="stats-empty-prompt" class="stats-empty">
+            <div class="stats-empty-icon">◈</div>
+            <p>Search for an exercise above<br>to see your stats.</p>
+          </div>
+
+          <!-- Stats content (shown after selection) -->
+          <div id="stats-content" style="display:none;">
+            <div class="stat-cards-row">
+              <div class="stat-card">
+                <div class="stat-card-label">1RM <span class="estimated-badge" id="rm-badge" style="display:none;">Est.</span></div>
+                <div class="stat-card-value" id="stat-1rm">—<span class="stat-card-unit"> lb</span></div>
+                <div class="stat-card-sub" id="stat-1rm-sub"></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card-label">Best set volume</div>
+                <div class="stat-card-value" id="stat-volume">—<span class="stat-card-unit"> lb</span></div>
+                <div class="stat-card-sub" id="stat-volume-sub"></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card-label">Total reps</div>
+                <div class="stat-card-value" id="stat-reps">—</div>
+                <div class="stat-card-sub" id="stat-reps-sub"></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card-label">Sessions</div>
+                <div class="stat-card-value" id="stat-sessions">—</div>
+                <div class="stat-card-sub" id="stat-sessions-sub"></div>
+              </div>
+            </div>
+
+            <div class="stats-chart-panel">
+              <div class="stats-chart-header">
+                <div class="stats-chart-title">Progress over time</div>
+                <div class="chart-toggle-group">
+                  <button class="chart-toggle-btn active" id="toggle-1rm">1RM</button>
+                  <button class="chart-toggle-btn" id="toggle-vol">Volume</button>
+                </div>
+              </div>
+              <canvas id="stats-chart" height="180"></canvas>
+              <div class="stats-pr-row" id="stats-pr-row"></div>
+            </div>
+          </div>
         </div>
 
         <!--Active session panel -->
@@ -759,7 +1015,7 @@
           // Core
           'Plank', 'Ab Wheel', 'Cable Crunch', 'Hanging Leg Raise', 'Sit-Up', 'Toes to Bar',
           // Olympic
-          'Push Jerk', 'Bar Muscle Up', 'Ring Muscle Up', 'Clean and Jerk', 'Power Snatch', 
+          'Push Jerk', 'Bar Muscle Up', 'Ring Muscle Up', 'Clean and Jerk', 'Power Snatch',
           'Hang Snatch', 'Overhead Squat', 'Thruster'
         ].sort();
 
@@ -885,6 +1141,7 @@
         const btnStartSession   = document.getElementById('btn-start-session');
 
         function refreshSessionUI() {
+            if (currentPage === 'stats') return;
             if (currentSession) {
                 const time = new Date(currentSession.performed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 sessionSubtitle.textContent = `started ${time}`;
@@ -970,7 +1227,7 @@
                 'btn-danger'
             );
             if (!confirmed) return;
-            
+
             try {
                 const res = await fetch(`${API}/users/${currentUser.user_id}/sessions/end`, {
                     method: 'POST',
@@ -1009,7 +1266,7 @@
                     'Not a 1RM'
                 );
             }
-            
+
             btnLogSet.disabled = true;
             btnLogSet.textContent = '...';
 
@@ -1068,7 +1325,7 @@
                 'btn-primary'
             );
             if (!confirmed) return;
-            
+
             currentUser = null;
             localStorage.removeItem('liftlog_user');
             currentSession = null;
@@ -1079,7 +1336,7 @@
             loginBtn.textContent = 'Log In';
             switchLink.textContent = 'Create one';
             refreshSessionUI();
-            loginOverlay.classList.remove('hidden');         
+            loginOverlay.classList.remove('hidden');
         }
 
         // -- EVENT LISTENERS ---------------
@@ -1128,7 +1385,7 @@
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                if (!res.ok) { loginError.textContent = data.detail || 'Something went wrong.'; return; 
+                if (!res.ok) { loginError.textContent = data.detail || 'Something went wrong.'; return;
                 }
 
                 const loginExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
@@ -1165,14 +1422,327 @@
         navOverlay.addEventListener('click', closeNav);
         sidebar.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', closeNav));
 
+        // -- PAGE NAVIGATION ---------------
+        const pages = {
+            session: document.getElementById('session-panel'),
+            noSession: document.getElementById('no-session-state'),
+            stats: document.getElementById('stats-page'),
+        };
+
+        const navItems = {
+            activeSession: document.getElementById('nav-active-session'),
+            stats: document.getElementById('nav-stats'),
+        };
+
+        let currentPage = 'session';
+
+        function showPage(page) {
+            currentPage = page;
+            const isSession = page === 'session';
+            const isStats   = page === 'stats';
+
+            pages.stats.style.display    = isStats ? 'block' : 'none';
+
+            // session page elements are managed by refreshSessionUI, just toggle visibility
+            const sessionEls = [pages.session, pages.noSession];
+            sessionEls.forEach(el => {
+                if (el) el.style.display = isSession ? '' : 'none';
+            });
+
+            // Active nav highlight
+            Object.values(navItems).forEach(el => el.classList.remove('active'));
+            if (isSession) navItems.activeSession.classList.add('active');
+            if (isStats)   navItems.stats.classList.add('active');
+
+            // page title
+            const titleEl = document.querySelector('.page-title');
+            if (isStats) {
+                titleEl.textContent = 'Stats';
+                document.getElementById('session-subtitle').textContent = '';
+                document.getElementById('btn-end-session').style.display = 'none';
+            } else {
+                if (currentUser) {
+                    titleEl.innerHTML = `Let's go, ${currentUser.username} 💪`;
+                } else {
+                    titleEl.textContent = 'Lift Log';
+                }
+                refreshSessionUI();
+            }
+        }
+
+        navItems.activeSession.addEventListener('click', e => { e.preventDefault(); showPage('session'); closeNav(); });
+        navItems.stats.addEventListener('click',         e => { e.preventDefault(); showPage('stats');   closeNav(); if (currentUser) loadStatsExercises(); });
+
+        // -- STATS LOGIC -------------------
+        let statsExercises   = [];
+        let statsAllSets     = [];
+        let statsChartMode   = '1rm';
+        let statsChartInst   = null;
+        let statsKbdIndex    = -1;
+
+        const statsInput     = document.getElementById('stats-exercise-input');
+        const statsDropdown  = document.getElementById('stats-dropdown');
+        const statsEmpty     = document.getElementById('stats-empty-prompt');
+        const statsContent   = document.getElementById('stats-content');
+
+        async function loadStatsExercises() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`${API}/users/${currentUser.user_id}/exercises`);
+                if (!res.ok) return;
+                statsExercises = await res.json(); // flat string array
+            } catch (err) {
+                console.error('Could not load exercises:', err);
+            }
+        }
+
+        function statsGetMatches(q) {
+            if (!q) return statsExercises.slice(0, 10);
+            const lq = q.toLowerCase();
+            return statsExercises.filter(e => e.toLowerCase().includes(lq));
+        }
+
+        function renderStatsDropdown(matches) {
+            statsDropdown.innerHTML = '';
+            statsKbdIndex = -1;
+            if (matches.length === 0) {
+                statsDropdown.innerHTML = '<div class="stats-dropdown-empty">No exercises found</div>';
+            } else {
+                matches.forEach(name => {
+                    const item = document.createElement('div');
+                    item.className = 'stats-dropdown-item';
+                    item.textContent = name;
+                    item.addEventListener('mousedown', e => { e.preventDefault(); selectStatsExercise(name); });
+                    statsDropdown.appendChild(item);
+                });
+            }
+            statsDropdown.classList.add('open');
+        }
+
+        function closeStatsDropdown() {
+            statsDropdown.classList.remove('open');
+            statsKbdIndex = -1;
+        }
+
+        function setStatsKbdActive(idx) {
+            const items = statsDropdown.querySelectorAll('.stats-dropdown-item');
+            items.forEach(el => el.classList.remove('kbd-active'));
+            if (idx >= 0 && idx < items.length) {
+                items[idx].classList.add('kbd-active');
+                items[idx].scrollIntoView({ block: 'nearest' });
+            }
+            statsKbdIndex = idx;
+        }
+
+        async function selectStatsExercise(name) {
+            statsInput.value = name;
+            closeStatsDropdown();
+            await loadStatsData(name);
+        }
+
+        statsInput.addEventListener('focus', () => { if (currentUser) loadStatsExercises(); renderStatsDropdown(statsGetMatches(statsInput.value.trim())); });
+        statsInput.addEventListener('input', () => renderStatsDropdown(statsGetMatches(statsInput.value.trim())));
+        statsInput.addEventListener('blur',  () => setTimeout(closeStatsDropdown, 150));
+        statsInput.addEventListener('keydown', e => {
+            const items = statsDropdown.querySelectorAll('.stats-dropdown-item');
+            if (!statsDropdown.classList.contains('open')) return;
+            if (e.key === 'ArrowDown') { e.preventDefault(); setStatsKbdActive(Math.min(statsKbdIndex + 1, items.length - 1)); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); setStatsKbdActive(Math.max(statsKbdIndex - 1, 0)); }
+            else if ((e.key === 'Enter' || e.key === 'Tab') && statsKbdIndex >= 0) { e.preventDefault(); selectStatsExercise(items[statsKbdIndex].textContent); }
+            else if (e.key === 'Escape') closeStatsDropdown();
+        });
+        document.addEventListener('click', e => { if (!e.target.closest('#stats-exercise-input') && !e.target.closest('#stats-dropdown')) closeStatsDropdown(); });
+
+        async function loadStatsData(exercise) {
+            if (!currentUser) return;
+            statsContent.style.display = 'none';
+            statsEmpty.style.display   = 'none';
+
+            try {
+                const res = await fetch(`${API}/users/${currentUser.user_id}/sets?exercise=${encodeURIComponent(exercise)}`);
+                if (!res.ok) { statsEmpty.style.display = 'block'; return; }
+                statsAllSets = await res.json();
+            } catch (err) {
+                console.error(err);
+                statsEmpty.style.display = 'block';
+                return;
+            }
+
+            if (statsAllSets.length === 0) { statsEmpty.style.display = 'block'; return; }
+
+            renderStatCards();
+            renderStatsChart();
+            statsContent.style.display = 'block';
+        }
+
+        function epley(weight, reps) { return reps === 1 ? weight : weight * (1 + reps / 30); }
+
+        function renderStatCards() {
+            const sets = statsAllSets;
+
+            // 1RM
+            const manualRMs = sets.filter(s => s.is_1rm);
+            let rmValue, rmEstimated;
+            if (manualRMs.length > 0) {
+                rmValue     = Math.max(...manualRMs.map(s => s.weight));
+                rmEstimated = false;
+            } else {
+                rmValue     = Math.max(...sets.map(s => epley(s.weight, s.reps)));
+                rmEstimated = true;
+            }
+
+            document.getElementById('stat-1rm').innerHTML = `${Math.round(rmValue)}<span class="stat-card-unit"> lb</span>`;
+            document.getElementById('rm-badge').style.display = rmEstimated ? 'inline-block' : 'none';
+            document.getElementById('stat-1rm-sub').textContent = rmEstimated ? 'via Epley formula' : 'manually logged';
+
+            // Best set volume (weight × reps)
+            const bestVol = sets.reduce((best, s) => {
+                const vol = s.weight * s.reps;
+                return vol > best.vol ? { vol, weight: s.weight, reps: s.reps } : best;
+            }, { vol: 0, weight: 0, reps: 0 });
+            document.getElementById('stat-volume').innerHTML = `${bestVol.vol.toLocaleString()}<span class="stat-card-unit"> lb</span>`;
+            document.getElementById('stat-volume-sub').textContent = `${bestVol.weight} lb × ${bestVol.reps} reps`;
+
+            // Total reps
+            const totalReps = sets.reduce((sum, s) => sum + s.reps, 0);
+            document.getElementById('stat-reps').textContent = totalReps.toLocaleString();
+
+            // Sessions (distinct session_ids)
+            const sessionIds = new Set(sets.map(s => s.session_id));
+            const sessionCount = sessionIds.size;
+            document.getElementById('stat-sessions').textContent = sessionCount;
+
+            // Last session date
+            const lastDate = new Date(sets[sets.length - 1].performed_at);
+            const daysAgo  = Math.floor((Date.now() - lastDate) / 86400000);
+            const daysStr  = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : `${daysAgo} days ago`;
+            document.getElementById('stat-reps-sub').textContent  = `across ${sessionCount} session${sessionCount !== 1 ? 's' : ''}`;
+            document.getElementById('stat-sessions-sub').textContent = `last: ${daysStr}`;
+        }
+
+        function buildChartData(mode) {
+            // Group by date (one point per session — take best value that session)
+            const byDate = {};
+            statsAllSets.forEach(s => {
+                const date = s.performed_at.split('T')[0];
+                if (!byDate[date]) byDate[date] = [];
+                byDate[date].push(s);
+            });
+
+            const manualRMExists = statsAllSets.some(s => s.is_1rm);
+
+            return Object.entries(byDate).sort().map(([date, sets]) => {
+                let val;
+                if (mode === '1rm') {
+                    if (manualRMExists) {
+                        const manual = sets.filter(s => s.is_1rm);
+                        val = manual.length > 0 ? Math.max(...manual.map(s => s.weight)) : null;
+                    } else {
+                        val = Math.max(...sets.map(s => epley(s.weight, s.reps)));
+                    }
+                } else {
+                    val = Math.max(...sets.map(s => s.weight * s.reps));
+                }
+                return { date, val: val !== null ? Math.round(val) : null };
+            }).filter(p => p.val !== null);
+        }
+
+        function renderStatsChart() {
+            const points = buildChartData(statsChartMode);
+            const labels = points.map(p => {
+                const d = new Date(p.date + 'T12:00:00');
+                return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            });
+            const values = points.map(p => p.val);
+
+            const prVal  = Math.max(...values);
+            const prIdx  = values.lastIndexOf(prVal);
+            const prDate = prIdx >= 0 ? labels[prIdx] : '';
+            const firstVal = values[0] || 0;
+            const pctChange = firstVal > 0 ? (((prVal - firstVal) / firstVal) * 100).toFixed(1) : null;
+
+            const prRow = document.getElementById('stats-pr-row');
+            if (prIdx >= 0) {
+                const unit = statsChartMode === '1rm' ? 'lb' : 'lb vol';
+                prRow.innerHTML = `<span class="pr-badge">PR</span> <span>${prVal.toLocaleString()} ${unit} — ${prDate}</span>`
+                    + (pctChange !== null ? `<span style="margin-left:auto;color:#46c632;">+${pctChange}% overall</span>` : '');
+            } else {
+                prRow.innerHTML = '';
+            }
+
+            const canvas  = document.getElementById('stats-chart');
+            const accent  = '#2563eb';
+            const gridCol = 'rgba(0,0,0,0.07)';
+
+            const pointColors = values.map((v, i) => i === prIdx ? '#46c632' : accent);
+            const pointRadii  = values.map((v, i) => i === prIdx ? 5 : 3);
+
+            if (statsChartInst) { statsChartInst.destroy(); statsChartInst = null; }
+
+            statsChartInst = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        borderColor: accent,
+                        borderWidth: 2,
+                        pointBackgroundColor: pointColors,
+                        pointRadius: pointRadii,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: ctx => {
+                            const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
+                            g.addColorStop(0,   'rgba(37,99,235,0.12)');
+                            g.addColorStop(1,   'rgba(37,99,235,0)');
+                            return g;
+                        },
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const v = ctx.parsed.y;
+                                    return statsChartMode === '1rm' ? `${v} lb` : `${v.toLocaleString()} lb`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: gridCol }, ticks: { font: { size: 11 }, color: '#8a8780' } },
+                        y: { grid: { color: gridCol }, ticks: { font: { size: 11 }, color: '#8a8780' }, beginAtZero: false }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('toggle-1rm').addEventListener('click', () => {
+            statsChartMode = '1rm';
+            document.getElementById('toggle-1rm').classList.add('active');
+            document.getElementById('toggle-vol').classList.remove('active');
+            if (statsAllSets.length) renderStatsChart();
+        });
+
+        document.getElementById('toggle-vol').addEventListener('click', () => {
+            statsChartMode = 'vol';
+            document.getElementById('toggle-vol').classList.add('active');
+            document.getElementById('toggle-1rm').classList.remove('active');
+            if (statsAllSets.length) renderStatsChart();
+        });
+
         // -- RESTORE USER from LOCAL STORAGE -----------
         const saved = localStorage.getItem('liftlog_user');
         if (saved) {
             const parsed = JSON.parse(saved);
             if (parsed.expiry && Date.now() < parsed.expiry) {
                 currentUser = parsed;
-                headerUsername.textContent = data.username;
-                document.querySelector('.page-title').innerHTML = `Let's go, ${data.username} 💪`;
+                headerUsername.textContent = currentUser.username;
+                document.querySelector('.page-title').innerHTML = `Let's go, ${currentUser.username} 💪`;
                 loginOverlay.classList.add('hidden');
                 restoreSession(currentUser.user_id);
             } else {
