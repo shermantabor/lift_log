@@ -183,7 +183,7 @@ def db_get_sets_for_session(conn, session_id: int):
     return cur.fetchall()
 
 def db_get_exercises_for_user(conn, user_id: int):
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
         SELECT DISTINCT sets.exercise
         FROM sets
