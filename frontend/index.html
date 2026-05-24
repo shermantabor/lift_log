@@ -1540,7 +1540,10 @@
             await loadStatsData(name);
         }
 
-        statsInput.addEventListener('focus', () => { if (currentUser) loadStatsExercises(); renderStatsDropdown(statsGetMatches(statsInput.value.trim())); });
+        statsInput.addEventListener('focus', async () => {
+          if (currentUser && statsExercises.length === 0) await loadStatsExercises();
+          renderStatsDropdown(statsGetMatches(statsInput.value.trim()));
+        });
         statsInput.addEventListener('input', () => renderStatsDropdown(statsGetMatches(statsInput.value.trim())));
         statsInput.addEventListener('blur',  () => setTimeout(closeStatsDropdown, 150));
         statsInput.addEventListener('keydown', e => {
