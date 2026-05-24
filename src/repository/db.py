@@ -1,56 +1,40 @@
 """
 Database access layer for Lift Log.
 
-Handles SQLite database initialization, connections, and CRUD
+Handles PostgreSQL database initialization, connections, and CRUD
 operations for storing and retrieving lift data.
 """
 
-from pathlib import Path
-import sqlite3
 import os
 from typing import Optional, Sequence
+import psycopg2
+import psycopg2.extras
 
-TEST_DB_PATH = None
-# ensure data directory exists and use ABSOLUTE path
-BASE_DIR = Path(__file__).resolve().parents[2]
-DATA_DIR = BASE_DIR / "data"
-DATA_DIR.mkdir(exist_ok=True)
-DB_PATH = os.environ.get('DB_PATH', 'data/lift_log.db')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# variable to store set entries and prep them for db entry
-SetRow = tuple[float, int, int] # (weight, reps, is_1rm)
+SetRow = tuple[float, int, int]  # (weight, reps, is_1rm)
 
 def get_conn():
-    path = TEST_DB_PATH if TEST_DB_PATH is not None else DB_PATH
-    conn = sqlite3.connect(path)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON;")
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
 
 def db_init_db():
-    '''initialize database, create new one if DNE'''
-
-    # connect to the database (creates file if DNE)
+    '''initialize database, create tables if they don't exist'''
     with get_conn() as conn:
-        cursor = conn.cursor()
+        cur = conn.cursor()
 
-        # enable foreign keys
-        cursor.execute("PRAGMA foreign_keys = ON;")
-
-        # create user data
-        cursor.execute('''
+        cur.execute('''
             CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id SERIAL PRIMARY KEY,
                 username TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 created_at TEXT NOT NULL
             );
         ''')
 
-        # create sessions table
-        cursor.execute('''
+        cur.execute('''
             CREATE TABLE IF NOT EXISTS sessions (
-                session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id SERIAL PRIMARY KEY,
                 user_id INTEGER NOT NULL,
                 performed_at TEXT NOT NULL,
                 notes TEXT,
@@ -59,17 +43,15 @@ def db_init_db():
             );
         ''')
 
-        # enforce only one active session
-        cursor.execute('''
+        cur.execute('''
             CREATE UNIQUE INDEX IF NOT EXISTS idx_one_active_session_per_user
             ON sessions (user_id)
             WHERE ended_at IS NULL;
-            ''')
+        ''')
 
-        # create sets table
-        cursor.execute('''
+        cur.execute('''
             CREATE TABLE IF NOT EXISTS sets (
-                set_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                set_id SERIAL PRIMARY KEY,
                 session_id INTEGER NOT NULL,
                 exercise TEXT NOT NULL,
                 weight REAL NOT NULL CHECK(weight >= 0),
@@ -80,35 +62,29 @@ def db_init_db():
             );
         ''')
 
-        # enforce unique set id
-        cursor.execute('''
-                CREATE UNIQUE INDEX IF NOT EXISTS idx_sets_unique_order
-                ON sets(session_id, exercise, set_index);
-                ''')
+        cur.execute('''
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_sets_unique_order
+            ON sets(session_id, exercise, set_index);
+        ''')
 
-        # commit changes and close
         conn.commit()
 
 def db_create_session(conn, user_id, performed_at, notes) -> int:
-    '''create new session in the db'''
-
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO sessions (user_id, performed_at, ended_at, notes) VALUES (?, ?, ?, ?);",
+        "INSERT INTO sessions (user_id, performed_at, ended_at, notes) VALUES (%s, %s, %s, %s) RETURNING session_id;",
         (user_id, performed_at, None, notes)
     )
-    session_id = cur.lastrowid
+    session_id = cur.fetchone()[0]
     return session_id
 
 def db_end_all_open_sessions(conn, user_id: int, performed_at: str) -> int:
-    '''end all open sessions in db'''
-
     cur = conn.cursor()
     cur.execute(
         """
         UPDATE sessions
-        SET ended_at = ?
-        WHERE user_id = ?
+        SET ended_at = %s
+        WHERE user_id = %s
         AND ended_at IS NULL
         """,
         (performed_at, user_id)
@@ -116,128 +92,92 @@ def db_end_all_open_sessions(conn, user_id: int, performed_at: str) -> int:
     return cur.rowcount
 
 def db_get_next_set_index(conn, session_id: int, exercise: str) -> int:
-    '''
-    get next set index for given session/exercise
-    set index starts at 1 and increments by 1 for a given session/exercise combo
-    e.g., if during session 4, you do 3 consecutive sets of bench press,
-        each set of bench press will be assigned 1, 2, 3
-        (sets can be across multiple entries, but must have identical exercise name)
-    '''
-
     cur = conn.cursor()
     cur.execute(
-        "SELECT COALESCE(MAX(set_index), 0) FROM sets WHERE session_id = ? AND exercise = ?",
+        "SELECT COALESCE(MAX(set_index), 0) FROM sets WHERE session_id = %s AND exercise = %s",
         (session_id, exercise)
     )
     return cur.fetchone()[0] + 1
 
 def db_insert_sets(conn, session_id, exercise, rows: Sequence[SetRow]) -> int:
-    '''insert multiple sets for given session/exercise
-    return number of rows inserted
-    '''
-
     start_index = db_get_next_set_index(conn, session_id, exercise)
     cur = conn.cursor()
     cur.executemany(
         """
-        INSERT INTO sets (session_id, exercise, weight, reps, is_1rm, set_index) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO sets (session_id, exercise, weight, reps, is_1rm, set_index)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """,
         [
             (session_id, exercise, weight, reps, is_1rm, start_index + i)
             for i, (weight, reps, is_1rm) in enumerate(rows)
         ],
     )
-
     return cur.rowcount
 
 def db_get_active_session(conn, user_id: int) -> Optional[int]:
-    '''get active session for given user if exists'''
-
-    cursor = conn.cursor()
-
-    # find the latest session and make sure it's not ended
-    cursor.execute(
+    cur = conn.cursor()
+    cur.execute(
         """
-        SELECT session_id
-        FROM sessions
-        WHERE user_id = ?
-        AND ended_at IS NULL
+        SELECT session_id FROM sessions
+        WHERE user_id = %s AND ended_at IS NULL
         ORDER BY session_id DESC
         LIMIT 1
         """,
         (user_id,)
     )
-
-    row = cursor.fetchone()
-    if row is None:
-        return None
-
-    session_id = row[0]
-
-    return session_id
+    row = cur.fetchone()
+    return row[0] if row else None
 
 def db_get_user(conn, username: str) -> Optional[tuple]:
-    """Return (user_id, password hash) for username if it exists, else None."""
-    cur = conn.cursor()
-    cur.execute("SELECT user_id, password_hash FROM users WHERE username = ?;", (username,))
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT user_id, password_hash FROM users WHERE username = %s;", (username,))
     return cur.fetchone()
 
 def db_create_user(conn, created_at: str, username: str, password_hash: str) -> int:
-    '''create new username/id combo in db'''
-
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?);",
+        "INSERT INTO users (username, password_hash, created_at) VALUES (%s, %s, %s) RETURNING user_id;",
         (username, password_hash, created_at)
     )
-    user_id = cur.lastrowid
-    return user_id
+    return cur.fetchone()[0]
 
-def db_get_sets_by_session(conn, session_id: int) -> tuple[str, float, int, int, int]:
-    '''pull sets from db given session id'''
-
-    cursor = conn.cursor()
-    cursor.execute(
+def db_get_sets_by_session(conn, session_id: int):
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute(
         """
         SELECT set_id, exercise, weight, reps, is_1rm
-        FROM sets
-        WHERE session_id = ?
+        FROM sets WHERE session_id = %s
         ORDER BY set_id DESC
         """,
         (session_id,)
     )
+    return cur.fetchall()
 
-    rows = cursor.fetchall()
-    return rows
-
-# getters for API GET calls
 def db_get_active_session_row(conn, user_id: int):
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
         SELECT session_id, user_id, performed_at, notes, ended_at
         FROM sessions
-        WHERE user_id = ? AND ended_at IS NULL
+        WHERE user_id = %s AND ended_at IS NULL
         LIMIT 1;
     """, (user_id,))
     return cur.fetchone()
 
 def db_get_sessions_for_user(conn, user_id: int):
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
         SELECT session_id, user_id, performed_at, notes, ended_at
         FROM sessions
-        WHERE user_id = ?
+        WHERE user_id = %s
         ORDER BY performed_at DESC;
     """, (user_id,))
     return cur.fetchall()
 
 def db_get_sets_for_session(conn, session_id: int):
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
         SELECT exercise, set_id, weight, reps, set_index, is_1rm
-        FROM sets
-        WHERE session_id = ?
+        FROM sets WHERE session_id = %s
         ORDER BY exercise, set_index;
     """, (session_id,))
     return cur.fetchall()
@@ -248,19 +188,18 @@ def db_get_exercises_for_user(conn, user_id: int):
         SELECT DISTINCT sets.exercise
         FROM sets
         JOIN sessions ON sets.session_id = sessions.session_id
-        WHERE sessions.user_id = ?
+        WHERE sessions.user_id = %s
         ORDER BY sets.exercise;
     """, (user_id,))
     return cur.fetchall()
 
-def db_get_sets_for_exercise(conn, exercise: str, user_id: int):
-    cur = conn.cursor()
+def db_get_sets_for_exercise(conn, user_id: int, exercise: str):
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
         SELECT sets.set_id, sets.weight, sets.reps, sets.is_1rm, sessions.performed_at
         FROM sets
         JOIN sessions ON sets.session_id = sessions.session_id
-        WHERE sessions.user_id = ?
-        AND sets.exercise = ?
+        WHERE sessions.user_id = %s AND sets.exercise = %s
         ORDER BY sessions.performed_at ASC;
     """, (user_id, exercise))
     return cur.fetchall()
