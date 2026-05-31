@@ -14,7 +14,7 @@ router = APIRouter(tags=["sessions"])
 def post_session(user_id: int, session: SessionCreate):
     performed_at = session.performed_at.isoformat(timespec="seconds") if session.performed_at else None
     try:
-        return create_session(user_id, session_name, performed_at, session.notes)
+        return create_session(user_id, session.session_name, performed_at, session.notes)
     except BadRequestError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except ConflictError as e:
