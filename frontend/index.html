@@ -1472,18 +1472,21 @@
             if (isStats)   navItems.stats.classList.add('active');
 
             // page title
-            const titleEl = document.querySelector('.page-title');
+            const titleEl = document.querySelector('.page-title-display');
             if (isStats) {
                 titleEl.textContent = 'Stats';
                 document.getElementById('session-subtitle').textContent = '';
                 document.getElementById('btn-end-session').style.display = 'none';
             } else {
-                if (currentUser && activeSession) {
-                    titleEl.innerHTML = `Untitled Workout`;
-                } else if (currentUser && !activeSession) {
-                    titleEl.innerHTML = `Let's go, ${currentUser.username} 💪`
+                if (currentSession) {
+                    titleEl.style.display    = 'none';
+                    titleInput.style.display = 'block';
                 } else {
-                    titleEl.textContent = 'Lift Log';
+                    titleEl.style.display    = 'block';
+                    titleInput.style.display = 'none';
+                    titleEl.innerHTML = currentUser
+                        ? `Let's go, ${currentUser.username} 💪`
+                        : 'Lift Log';
                 }
                 refreshSessionUI();
             }
