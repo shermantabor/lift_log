@@ -1618,7 +1618,7 @@
 
             // Last session date
             const lastDate = new Date(sets[sets.length - 1].performed_at);
-            const daysAgo  = Math.floor((Date.now() - lastDate) / 86400000);
+            const daysAgo  = Math.floor((Date.now() - lastDate + 1) / 86400000);
             const daysStr  = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : `${daysAgo} days ago`;
             document.getElementById('stat-reps-sub').textContent  = `across ${sessionCount} session${sessionCount !== 1 ? 's' : ''}`;
             document.getElementById('stat-sessions-sub').textContent = `last: ${daysStr}`;

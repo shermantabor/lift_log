@@ -196,7 +196,7 @@ def db_get_exercises_for_user(conn, user_id: int):
 def db_get_sets_for_exercise(conn, user_id: int, exercise: str):
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
-        SELECT sets.set_id, sets.weight, sets.reps, sets.is_1rm, sessions.performed_at
+        SELECT sets.set_id, sets.weight, sets.reps, sets.is_1rm, sets.session_id, sessions.performed_at
         FROM sets
         JOIN sessions ON sets.session_id = sessions.session_id
         WHERE sessions.user_id = %s AND sets.exercise = %s
