@@ -21,6 +21,7 @@ class UserResponse(BaseModel):
 class SessionCreate(BaseModel):
     performed_at: Optional[datetime] = None
     notes: Optional[str] = Field(None, max_length=500)
+    session_name: Optional[str] = Field(None, max_length=100)
 
 class SessionResponse(BaseModel):
     session_id: int
@@ -28,6 +29,7 @@ class SessionResponse(BaseModel):
     performed_at: datetime
     notes: Optional[str] = None
     ended_at: Optional[datetime] = None
+    session_name: Optional[str] = None
 
 # SET SCHEMAS
 class SetCreate(BaseModel):

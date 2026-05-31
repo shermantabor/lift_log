@@ -39,6 +39,7 @@ def db_init_db():
                 performed_at TEXT NOT NULL,
                 notes TEXT,
                 ended_at TEXT NULL,
+                session_name TEXT,
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
             );
         ''')
@@ -118,7 +119,7 @@ def db_get_active_session(conn, user_id: int) -> Optional[int]:
     cur = conn.cursor()
     cur.execute(
         """
-        SELECT session_id FROM sessions
+        SELECT session_id, session_name FROM sessions
         WHERE user_id = %s AND ended_at IS NULL
         ORDER BY session_id DESC
         LIMIT 1
@@ -166,7 +167,7 @@ def db_get_active_session_row(conn, user_id: int):
 def db_get_sessions_for_user(conn, user_id: int):
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
-        SELECT session_id, user_id, performed_at, notes, ended_at
+        SELECT session_id, session_name, user_id, performed_at, notes, ended_at
         FROM sessions
         WHERE user_id = %s
         ORDER BY performed_at DESC;
