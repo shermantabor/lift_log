@@ -69,11 +69,11 @@ def db_init_db():
 
         conn.commit()
 
-def db_create_session(conn, user_id, performed_at, notes) -> int:
+def db_create_session(conn, user_id, session_name, performed_at, notes) -> int:
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO sessions (user_id, performed_at, ended_at, notes) VALUES (%s, %s, %s, %s) RETURNING session_id;",
-        (user_id, performed_at, None, notes)
+        "INSERT INTO sessions (user_id, session_name, performed_at, ended_at, notes) VALUES (%s, %s, %s, %s, %s) RETURNING session_id;",
+        (user_id, session_name, performed_at, None, notes)
     )
     session_id = cur.fetchone()[0]
     return session_id

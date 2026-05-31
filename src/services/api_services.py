@@ -45,18 +45,24 @@ def login_user(username: str, password: str) ->dict:
         return {"user_id": user_id, "username": username}
 
 
-def create_session(user_id: int, performed_at: str | None, notes :str | None) -> dict:
+def create_session(user_id: int, session_name: str, performed_at: str | None, notes :str | None) -> dict:
     performed_at = performed_at or now_iso()
+
+    # Use custom name if provided, otherwise generate from date
+    if not session_name:
+        date_str = datetime.fromisoformat(performed_at).strftime("%m-%d-%Y")
+        session_name = f"Session {date_str}"
 
     with get_conn() as conn:
         active = db_get_active_session(conn, user_id)
         if active is not None:
             raise ConflictError("Active session already exists")
-        session_id = db_create_session(conn, user_id, performed_at, notes)
+        session_id = db_create_session(conn, user_id, session_name, performed_at, notes)
         conn.commit()
 
     return {
         "session_id": session_id,
+        "session_name": session_name,
         "user_id": user_id,
         "performed_at": performed_at,
         "notes": notes,

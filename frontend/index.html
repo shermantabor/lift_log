@@ -874,11 +874,14 @@
         <!--Page header-->
         <div class="page-header">
             <div>
-                <div class="page-title">Lift Log</div>
+                <div class="page-title" id="page-title-display">Lift Log</div>
+                <input class="page-title" id="page-title-input" 
+                      style="display:none; background:transparent; border:none; border-bottom: 2px solid var(--accent); outline:none; width:100%;" 
+                      type="text">
                 <div class="page-subtitle" id="session-subtitle"></div>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button class="btn"> Add notes</button>
+                <!--<button class="btn"> Add notes</button>-->
                 <button class="btn btn-danger" id="btn-end-session" style="display:none;">End session</button>
             </div>
         </div>
@@ -1141,8 +1144,14 @@
         const btnStartSession   = document.getElementById('btn-start-session');
 
         function refreshSessionUI() {
+            const titleDisplay = document.getElementById('page-title-display');
+            const titleInput   = document.getElementById('page-title-input');
+          
             if (currentPage === 'stats') return;
             if (currentSession) {
+                titleDisplay.style.display = 'none';
+                titleInput.style.display   = 'block';
+                titleInput.value = currentSession.session_name || `Session ${new Date(currentSession.performed_at).toLocaleDateString()}`;
                 const time = new Date(currentSession.performed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 sessionSubtitle.textContent = `started ${time}`;
                 btnEndSession.style.display = 'inline-block';
@@ -1151,6 +1160,11 @@
                 noSessionState.style.display = 'none';
                 sessionPanel.style.display   = 'block';
             } else {
+                titleDisplay.style.display = 'block';
+                titleInput.style.display   = 'none';
+                if (currentUser) {
+                    titleDisplay.innerHTML = `Let's go, ${currentUser.username} 💪`;
+                }
                 sessionSubtitle.textContent  = '';
                 btnEndSession.style.display  = 'none';
                 navNewSession.style.display  = 'flex';
@@ -1229,11 +1243,13 @@
             );
             if (!confirmed) return;
 
+            const sessionName = document.getElementById('page-title-input').value.trim();
+
             try {
                 const res = await fetch(`${API}/users/${currentUser.user_id}/sessions/end`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
+                    body: JSON.stringify({ session_name: sessionName })
                 });
                 const data = await res.json();
                 if (!res.ok) { alert(data.detail || 'Could not end session.'); return; }
@@ -1462,8 +1478,10 @@
                 document.getElementById('session-subtitle').textContent = '';
                 document.getElementById('btn-end-session').style.display = 'none';
             } else {
-                if (currentUser) {
-                    titleEl.innerHTML = `Let's go, ${currentUser.username} 💪`;
+                if (currentUser && activeSession) {
+                    titleEl.innerHTML = `Untitled Workout`;
+                } else if (currentUser && !activeSession) {
+                    titleEl.innerHTML = `Let's go, ${currentUser.username} 💪`
                 } else {
                     titleEl.textContent = 'Lift Log';
                 }

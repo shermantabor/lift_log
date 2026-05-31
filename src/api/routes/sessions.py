@@ -11,10 +11,10 @@ from src.services.errors import BadRequestError, ConflictError, NotFoundError
 router = APIRouter(tags=["sessions"])
 
 @router.post("/users/{user_id}/sessions", response_model=SessionResponse, status_code=201)
-def post_session(user_id: int, session: SessionCreate):
+def post_session(user_id: int, session_name: str, session: SessionCreate):
     performed_at = session.performed_at.isoformat(timespec="seconds") if session.performed_at else None
     try:
-        return create_session(user_id, performed_at, session.notes)
+        return create_session(user_id, session_name, performed_at, session.notes)
     except BadRequestError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except ConflictError as e:
