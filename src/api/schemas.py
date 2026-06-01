@@ -31,6 +31,9 @@ class SessionResponse(BaseModel):
     ended_at: Optional[datetime] = None
     session_name: Optional[str] = None
 
+class SessionEnd(BaseModel):
+    session_name: Optional[str] = None
+
 # SET SCHEMAS
 class SetCreate(BaseModel):
     exercise: str = Field(..., min_length=1, max_length=100)

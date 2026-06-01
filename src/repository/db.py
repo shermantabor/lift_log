@@ -79,17 +79,13 @@ def db_create_session(conn, user_id, session_name, performed_at, notes) -> int:
     session_id = cur.fetchone()[0]
     return session_id
 
-def db_end_all_open_sessions(conn, user_id: int, performed_at: str) -> int:
+def db_end_all_open_sessions(conn, user_id: int, ended_at: str, session_name: str = None) -> int:
     cur = conn.cursor()
-    cur.execute(
-        """
+    cur.execute("""
         UPDATE sessions
-        SET ended_at = %s
-        WHERE user_id = %s
-        AND ended_at IS NULL
-        """,
-        (performed_at, user_id)
-    )
+        SET ended_at = %s, session_name = COALESCE(%s, session_name)
+        WHERE user_id = %s AND ended_at IS NULL
+    """, (ended_at, session_name, user_id))
     return cur.rowcount
 
 def db_get_next_set_index(conn, session_id: int, exercise: str) -> int:
@@ -157,7 +153,7 @@ def db_get_sets_by_session(conn, session_id: int):
 def db_get_active_session_row(conn, user_id: int):
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("""
-        SELECT session_id, user_id, performed_at, notes, ended_at
+        SELECT session_id, user_id, performed_at, notes, ended_at, session_name
         FROM sessions
         WHERE user_id = %s AND ended_at IS NULL
         LIMIT 1;

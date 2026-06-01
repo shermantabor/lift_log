@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from src.api.schemas import SessionCreate, SessionResponse
+from src.api.schemas import SessionCreate, SessionResponse, SessionEnd
 from src.services.api_services import (
     create_session,
     end_active_session,
@@ -23,9 +23,9 @@ def post_session(user_id: int, session: SessionCreate):
         raise HTTPException(status_code=404, detail=str(e))
 
 @router.post("/users/{user_id}/sessions/end")
-def end_session(user_id: int):
+def end_session(user_id: int, body: SessionEnd = SessionEnd()):
     try:
-        return end_active_session(user_id)
+        return end_active_session(user_id, body.session_name)
     except BadRequestError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except ConflictError as e:

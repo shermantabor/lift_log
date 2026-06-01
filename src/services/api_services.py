@@ -69,10 +69,10 @@ def create_session(user_id: int, session_name: str, performed_at: str | None, no
         "ended_at": None,
     }
 
-def end_active_session(user_id: int) -> dict:
+def end_active_session(user_id: int, session_name: str = None) -> dict:
     ended_at = now_iso()
     with get_conn() as conn:
-        n = db_end_all_open_sessions(conn, user_id, ended_at)
+        n = db_end_all_open_sessions(conn, user_id, ended_at, session_name)
         if n == 0:
             raise BadRequestError("No active session found for this user")
         conn.commit()
