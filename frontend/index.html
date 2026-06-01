@@ -1458,13 +1458,13 @@
             const isSession = page === 'session';
             const isStats   = page === 'stats';
 
-            pages.stats.style.display    = isStats ? 'block' : 'none';
+            pages.stats.style.display = isStats ? 'block' : 'none';
 
-            // session page elements are managed by refreshSessionUI, just toggle visibility
-            const sessionEls = [pages.session, pages.noSession];
-            sessionEls.forEach(el => {
-                if (el) el.style.display = isSession ? '' : 'none';
-            });
+            // Hide both session panels when leaving; refreshSessionUI will show the right one on return
+            if (!isSession) {
+                if (pages.session)   pages.session.style.display   = 'none';
+                if (pages.noSession) pages.noSession.style.display = 'none';
+            }
 
             // Active nav highlight
             Object.values(navItems).forEach(el => el.classList.remove('active'));
