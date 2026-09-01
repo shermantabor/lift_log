@@ -832,6 +832,179 @@
     .stats-empty-icon { font-size: 28px; opacity: 0.35; margin-bottom: 12px; }
     .stats-empty p { font-size: 12px; line-height: 1.6; }
 
+    /* ── SOCIAL PAGE ─────────────────────────────────── */
+    .social-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 18px 20px;
+      margin-top: 20px;
+    }
+
+    .social-panel-title {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .social-count {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      padding: 1px 7px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .social-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(46, 46, 46, 0.5);
+    }
+
+    .social-row:last-child { border-bottom: none; }
+
+    .social-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .social-name {
+      font-size: 13px;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .social-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .social-actions .btn { padding: 4px 10px; font-size: 10px; }
+
+    .social-note {
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .social-empty-line {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 4px 0;
+    }
+
+    .social-msg {
+      font-size: 11px;
+      margin-top: 10px;
+      min-height: 14px;
+    }
+
+    .social-msg.err { color: var(--danger); }
+    .social-msg.ok  { color: #46c632; }
+
+    /* friend picker for the comparison */
+    .friend-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .friend-chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .friend-chip:hover { color: var(--text); border-color: var(--muted); }
+
+    .friend-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .compare-table th {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: right;
+      padding: 0 10px 9px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    .compare-table th:first-child,
+    .compare-table td:first-child {
+      text-align: left;
+      padding-left: 0;
+      color: var(--muted);
+    }
+
+    .compare-table td {
+      padding: 10px;
+      font-size: 13px;
+      color: var(--text);
+      text-align: right;
+      border-bottom: 1px solid rgba(46, 46, 46, 0.5);
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+
+    .compare-table th:last-child,
+    .compare-table td:last-child { padding-right: 0; }
+
+    .compare-weight { font-weight: 700; }
+    .compare-blank  { color: var(--muted); }
+    .compare-lead   { color: #46c632; font-weight: 700; }
+    .compare-trail  { color: var(--danger); }
+
+    .compare-summary {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
     /* ── SCROLLBAR ───────────────────────────────────── */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -888,8 +1061,9 @@
             <span class="nav-icon">▣</span> Active Session
             <span class="session-badge" id="live-badge">Live</span>
         </a>
-        <a class="nav-item" href="#" id="nav-sessions">
-            <span class="nav-icon">≡</span> Sessions
+        <a class="nav-item" href="#" id="nav-social">
+            <span class="nav-icon">◎</span> Social
+            <span class="session-badge" id="requests-badge" style="display:none;">0</span>
         </a>
         <a class="nav-item" href="#" id="nav-stats">
         <span class="nav-icon">◈</span> Stats
@@ -1008,6 +1182,69 @@
           </div>
         </div>
 
+        <!-- SOCIAL PAGE -->
+        <div id="social-page" style="display:none;">
+          <div class="stats-search-wrap">
+            <input type="text" class="stats-search-input" id="social-search-input"
+                   placeholder="Find lifters by username…" autocomplete="off">
+            <div class="stats-dropdown" id="social-search-dropdown"></div>
+          </div>
+          <div class="social-msg" id="social-msg"></div>
+
+          <!-- Incoming requests (hidden when there are none) -->
+          <div class="social-panel" id="social-incoming-panel" style="display:none;">
+            <div class="social-panel-title">
+              Friend requests <span class="social-count" id="social-incoming-count">0</span>
+            </div>
+            <div id="social-incoming-list"></div>
+          </div>
+
+          <!-- Sent requests (hidden when there are none) -->
+          <div class="social-panel" id="social-outgoing-panel" style="display:none;">
+            <div class="social-panel-title">Sent requests</div>
+            <div id="social-outgoing-list"></div>
+          </div>
+
+          <div class="social-panel">
+            <div class="social-panel-title">Friends</div>
+            <div id="social-friends-list"></div>
+          </div>
+
+          <!-- Comparison -->
+          <div class="social-panel" id="social-compare-panel" style="display:none;">
+            <div class="social-panel-title">Compare lifts</div>
+            <div class="friend-chips" id="compare-friend-chips"></div>
+
+            <div class="stats-search-wrap" style="margin-top:0;">
+              <input type="text" class="stats-search-input" id="compare-exercise-input"
+                     placeholder="Pick an exercise you both train…" autocomplete="off" disabled>
+              <div class="stats-dropdown" id="compare-exercise-dropdown"></div>
+            </div>
+
+            <div id="compare-result" style="display:none; margin-top:18px;">
+              <table class="compare-table">
+                <thead>
+                  <tr>
+                    <th>Reps</th>
+                    <th id="compare-col-you">You</th>
+                    <th id="compare-col-them">Them</th>
+                    <th>Diff</th>
+                  </tr>
+                </thead>
+                <tbody id="compare-body"></tbody>
+              </table>
+              <div class="top-sets-more" id="compare-more-wrap" style="display:none;">
+                <button class="btn" id="compare-more-btn">Show more</button>
+              </div>
+              <div class="compare-summary" id="compare-summary"></div>
+            </div>
+
+            <div class="social-empty-line" id="compare-hint" style="margin-top:12px;">
+              Select a friend to compare with.
+            </div>
+          </div>
+        </div>
+
         <!--Active session panel -->
         <div class="panel" id="session-panel">
             <div class="panel-header">
@@ -1049,10 +1286,45 @@
      </main>
 
     <script>
-        const API = 'https://lift-log-cmso.onrender.com';
+        // Point at a local API when the page itself is served locally, so the
+        // deployed backend is never hit from a dev machine.
+        const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0'];
+        const API = LOCAL_HOSTS.includes(location.hostname)
+            ? `http://${location.hostname}:8000`
+            : 'https://lift-log-cmso.onrender.com';
         let currentUser    = null;
         let currentSession = null;
         let authMode       = 'login';
+        let authToken      = null;
+
+        /*
+         * Escape anything user-authored before it reaches innerHTML. Usernames and
+         * exercise names are free text, and with friends' data on screen an
+         * unescaped value would run in someone else's browser.
+         */
+        function esc(value) {
+            return String(value).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        /*
+         * Every authenticated call goes through here: it attaches the bearer token
+         * and, if the server says the token is bad or expired, drops the client
+         * back to the login overlay instead of failing silently.
+         */
+        async function apiFetch(path, options = {}) {
+            const headers = { ...(options.headers || {}) };
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+            if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+
+            const res = await fetch(`${API}${path}`, { ...options, headers });
+            if (res.status === 401) {
+                forceLogout('Your session expired. Please log in again.');
+                throw new Error('unauthenticated');
+            }
+            return res;
+        }
 
         const EXERCISES = [
           // Chest
@@ -1221,7 +1493,7 @@
                 titleDisplay.style.display = 'block';
                 titleInput.style.display   = 'none';
                 if (currentUser) {
-                    titleDisplay.innerHTML = `Let's go, ${currentUser.username} 💪`;
+                    titleDisplay.innerHTML = `Let's go, ${esc(currentUser.username)} 💪`;
                 }
                 sessionSubtitle.textContent  = '';
                 btnEndSession.style.display  = 'none';
@@ -1238,9 +1510,9 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="set-index">${index}</td>
-                <td><span class="exercise-tag">${set.exercise}</span></td>
-                <td class="weight-val">${set.weight} <span style="color:var(--muted);font-size:11px;">lb</span></td>
-                <td>${set.reps}${set.is_1rm ? '<span class="one-rm-badge">1RM</span>' : ''}</td>
+                <td><span class="exercise-tag">${esc(set.exercise)}</span></td>
+                <td class="weight-val">${esc(set.weight)} <span style="color:var(--muted);font-size:11px;">lb</span></td>
+                <td>${esc(set.reps)}${set.is_1rm ? '<span class="one-rm-badge">1RM</span>' : ''}</td>
                 <td></td>
             `;
             setsTbody.appendChild(tr);
@@ -1275,9 +1547,8 @@
         async function startSession() {
             if (!currentUser) return;
             try {
-                const res = await fetch(`${API}/users/${currentUser.user_id}/sessions`, {
+                const res = await apiFetch('/me/sessions', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({})
                 });
                 const data = await res.json();
@@ -1304,9 +1575,8 @@
             const sessionName = document.getElementById('page-title-input').value.trim();
 
             try {
-                const res = await fetch(`${API}/users/${currentUser.user_id}/sessions/end`, {
+                const res = await apiFetch('/me/sessions/end', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ session_name: sessionName })
                 });
                 const data = await res.json();
@@ -1346,9 +1616,8 @@
             btnLogSet.textContent = '...';
 
             try {
-                const res = await fetch(`${API}/users/${currentUser.user_id}/sets`, {
+                const res = await apiFetch('/me/sets', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         sets: [{ exercise, weight, reps, is_1rm: is1rm }]
                     })
@@ -1371,15 +1640,15 @@
             }
         }
 
-        async function restoreSession(user_id) {
+        async function restoreSession() {
             try {
-                const res = await fetch(`${API}/users/${user_id}/sessions/active`);
+                const res = await apiFetch('/me/sessions/active');
                 if (!res.ok) return;
 
                 const data = await res.json();
                 currentSession = { session_id: data.session_id, performed_at: data.performed_at };
 
-                const setsRes = await fetch(`${API}/sessions/${data.session_id}/sets`);
+                const setsRes = await apiFetch(`/sessions/${data.session_id}/sets`);
                 if (setsRes.ok) {
                     const sets = await setsRes.json();
                     sets.forEach((set, i) => renderSetRow(set, i + 1));
@@ -1400,13 +1669,27 @@
                 'btn-primary'
             );
             if (!confirmed) return;
+            forceLogout();
+        }
 
+        /*
+         * Clears all client-side auth state. Called on explicit logout and
+         * whenever the server rejects our token.
+         */
+        function forceLogout(message = '') {
             currentUser = null;
+            authToken = null;
             localStorage.removeItem('liftlog_user');
             currentSession = null;
+            // drop the previous account's social state so it cannot leak into the next login
+            socialFriends = [];
+            socialRequests = { incoming: [], outgoing: [] };
+            resetCompare();
+            updateRequestsBadge();
+            showPage('session');
             loginUsername.value = '';
             loginPassword.value = '';
-            loginError.textContent = '';
+            loginError.textContent = message;
             authMode = 'login';
             loginBtn.textContent = 'Log In';
             switchLink.textContent = 'Create one';
@@ -1463,16 +1746,21 @@
                 if (!res.ok) { loginError.textContent = data.detail || 'Something went wrong.'; return;
                 }
 
-                const loginExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+                // Mirrors the token's own 7-day lifetime so an obviously stale
+                // token is dropped without a round trip. The server's `exp`
+                // claim is what actually enforces this.
+                const loginExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
+                authToken   = data.access_token;
                 currentUser = { user_id: data.user_id, username: data.username, expiry: loginExpiry };
-                localStorage.setItem('liftlog_user', JSON.stringify(currentUser));
+                localStorage.setItem('liftlog_user', JSON.stringify({ ...currentUser, token: authToken }));
                 headerUsername.textContent = data.username;
-                document.querySelector('.page-title').innerHTML = `Let's go, ${currentUser.username} 💪`;
+                document.querySelector('.page-title').innerHTML = `Let's go, ${esc(currentUser.username)} 💪`;
                 loginOverlay.classList.add('hidden');
                 loginPassword.value = '';
 
                 // Check for existing session immediately after login
-                await restoreSession(currentUser.user_id);
+                await restoreSession();
+                loadSocial();   // populates the pending-request badge
                 refreshSessionUI();
             } catch (err) {
                 loginError.textContent = 'Could not reach server. Is your backend running?';
@@ -1502,21 +1790,25 @@
             session: document.getElementById('session-panel'),
             noSession: document.getElementById('no-session-state'),
             stats: document.getElementById('stats-page'),
+            social: document.getElementById('social-page'),
         };
 
         const navItems = {
             activeSession: document.getElementById('nav-active-session'),
             stats: document.getElementById('nav-stats'),
+            social: document.getElementById('nav-social'),
         };
+
+        const PAGE_TITLES = { stats: 'Stats', social: 'Social' };
 
         let currentPage = 'session';
 
         function showPage(page) {
             currentPage = page;
             const isSession = page === 'session';
-            const isStats   = page === 'stats';
 
-            pages.stats.style.display = isStats ? 'block' : 'none';
+            pages.stats.style.display  = page === 'stats'  ? 'block' : 'none';
+            pages.social.style.display = page === 'social' ? 'block' : 'none';
 
             // Hide both session panels when leaving; refreshSessionUI will show the right one on return
             if (!isSession) {
@@ -1526,22 +1818,23 @@
 
             // Active nav highlight
             Object.values(navItems).forEach(el => el.classList.remove('active'));
-            if (isSession) navItems.activeSession.classList.add('active');
-            if (isStats)   navItems.stats.classList.add('active');
+            if (isSession)          navItems.activeSession.classList.add('active');
+            else if (navItems[page]) navItems[page].classList.add('active');
 
             // page title
             const titleEl = document.getElementById('page-title-display');
-                if (isStats) {
-                    titleEl.textContent = 'Stats';
-                    document.getElementById('session-subtitle').textContent = '';
-                    document.getElementById('btn-end-session').style.display = 'none';
-                } else {
-                    refreshSessionUI();
-                }
+            if (PAGE_TITLES[page]) {
+                titleEl.textContent = PAGE_TITLES[page];
+                document.getElementById('session-subtitle').textContent = '';
+                document.getElementById('btn-end-session').style.display = 'none';
+            } else {
+                refreshSessionUI();
+            }
         }
 
         navItems.activeSession.addEventListener('click', e => { e.preventDefault(); showPage('session'); closeNav(); });
         navItems.stats.addEventListener('click',         e => { e.preventDefault(); showPage('stats');   closeNav(); if (currentUser) loadStatsExercises(); });
+        navItems.social.addEventListener('click',        e => { e.preventDefault(); showPage('social');  closeNav(); if (currentUser) loadSocial(); });
 
         // -- STATS LOGIC -------------------
         let statsExercises   = [];
@@ -1561,7 +1854,7 @@
         async function loadStatsExercises() {
             if (!currentUser) return;
             try {
-                const res = await fetch(`${API}/users/${currentUser.user_id}/exercises`);
+                const res = await apiFetch('/me/exercises');
                 if (!res.ok) return;
                 statsExercises = await res.json(); // flat string array
             } catch (err) {
@@ -1635,7 +1928,7 @@
             statsEmpty.style.display   = 'none';
 
             try {
-                const res = await fetch(`${API}/users/${currentUser.user_id}/sets?exercise=${encodeURIComponent(exercise)}`);
+                const res = await apiFetch(`/me/sets?exercise=${encodeURIComponent(exercise)}`);
                 if (!res.ok) { statsEmpty.style.display = 'block'; return; }
                 statsAllSets = await res.json();
             } catch (err) {
@@ -1860,16 +2153,429 @@
             if (statsAllSets.length) renderStatsChart();
         });
 
+        // -- SOCIAL LOGIC ------------------
+        let socialFriends   = [];
+        let socialRequests  = { incoming: [], outgoing: [] };
+        let socialSearchTimer = null;
+
+        const socialMsgEl    = document.getElementById('social-msg');
+        const socialInput    = document.getElementById('social-search-input');
+        const socialDropdown = document.getElementById('social-search-dropdown');
+
+        function socialMsg(text, kind = 'ok') {
+            socialMsgEl.textContent = text;
+            socialMsgEl.className = `social-msg ${kind}`;
+            if (text) setTimeout(() => {
+                if (socialMsgEl.textContent === text) socialMsgEl.textContent = '';
+            }, 4000);
+        }
+
+        function initial(name) { return (name || '?').charAt(0); }
+
+        async function loadSocial() {
+            if (!currentUser) return;
+            try {
+                const [friendsRes, requestsRes] = await Promise.all([
+                    apiFetch('/me/friends'),
+                    apiFetch('/me/friend-requests'),
+                ]);
+                if (!friendsRes.ok || !requestsRes.ok) return;
+                socialFriends  = await friendsRes.json();
+                socialRequests = await requestsRes.json();
+            } catch (err) {
+                console.error(err);
+                return;
+            }
+            renderRequests();
+            renderFriends();
+            renderCompareChips();
+            updateRequestsBadge();
+        }
+
+        function updateRequestsBadge() {
+            const badge = document.getElementById('requests-badge');
+            const n = socialRequests.incoming.length;
+            badge.textContent = n;
+            badge.style.display = n > 0 ? 'inline-block' : 'none';
+        }
+
+        function renderRequests() {
+            const incomingPanel = document.getElementById('social-incoming-panel');
+            const incoming = socialRequests.incoming;
+            incomingPanel.style.display = incoming.length ? 'block' : 'none';
+            document.getElementById('social-incoming-count').textContent = incoming.length;
+            document.getElementById('social-incoming-list').innerHTML = incoming.map(r => `
+                <div class="social-row">
+                    <div class="social-avatar">${esc(initial(r.username))}</div>
+                    <div class="social-name">${esc(r.username)}</div>
+                    <div class="social-actions">
+                        <button class="btn btn-primary" data-accept="${r.friendship_id}">Accept</button>
+                        <button class="btn" data-decline="${r.friendship_id}">Decline</button>
+                    </div>
+                </div>
+            `).join('');
+
+            const outgoingPanel = document.getElementById('social-outgoing-panel');
+            const outgoing = socialRequests.outgoing;
+            outgoingPanel.style.display = outgoing.length ? 'block' : 'none';
+            document.getElementById('social-outgoing-list').innerHTML = outgoing.map(r => `
+                <div class="social-row">
+                    <div class="social-avatar">${esc(initial(r.username))}</div>
+                    <div class="social-name">${esc(r.username)}</div>
+                    <div class="social-note">Pending</div>
+                    <div class="social-actions">
+                        <button class="btn" data-cancel="${r.friendship_id}">Cancel</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFriends() {
+            const list = document.getElementById('social-friends-list');
+            if (!socialFriends.length) {
+                list.innerHTML = '<div class="social-empty-line">No friends yet — search above to add one.</div>';
+                return;
+            }
+            list.innerHTML = socialFriends.map(f => `
+                <div class="social-row">
+                    <div class="social-avatar">${esc(initial(f.username))}</div>
+                    <div class="social-name">${esc(f.username)}</div>
+                    <div class="social-actions">
+                        <button class="btn" data-compare="${f.friend_id}">Compare</button>
+                        <button class="btn btn-danger" data-remove="${f.friend_id}"
+                                data-username="${esc(f.username)}">Remove</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // -- user search --
+
+        const SEARCH_STATUS_LABEL = {
+            friends: 'Friends',
+            request_sent: 'Requested',
+            request_received: 'Wants to add you',
+        };
+
+        function renderSearchResults(results) {
+            if (!results.length) {
+                socialDropdown.innerHTML = '<div class="stats-dropdown-empty">No lifters found</div>';
+            } else {
+                socialDropdown.innerHTML = results.map(u => {
+                    const action = u.status === 'none'
+                        ? `<button class="btn btn-primary" data-add="${esc(u.username)}">Add</button>`
+                        : `<span class="social-note">${SEARCH_STATUS_LABEL[u.status]}</span>`;
+                    return `
+                        <div class="social-row" style="padding:9px 14px;">
+                            <div class="social-avatar">${esc(initial(u.username))}</div>
+                            <div class="social-name">${esc(u.username)}</div>
+                            <div class="social-actions">${action}</div>
+                        </div>`;
+                }).join('');
+            }
+            socialDropdown.classList.add('open');
+        }
+
+        async function runUserSearch(q) {
+            if (!q) { socialDropdown.classList.remove('open'); return; }
+            try {
+                const res = await apiFetch(`/me/search?q=${encodeURIComponent(q)}`);
+                if (!res.ok) return;
+                renderSearchResults(await res.json());
+            } catch (err) { console.error(err); }
+        }
+
+        socialInput.addEventListener('input', () => {
+            clearTimeout(socialSearchTimer);
+            const q = socialInput.value.trim();
+            // debounced so typing does not fire a request per keystroke
+            socialSearchTimer = setTimeout(() => runUserSearch(q), 250);
+        });
+        socialInput.addEventListener('blur', () => setTimeout(() => socialDropdown.classList.remove('open'), 180));
+        socialInput.addEventListener('focus', () => { if (socialInput.value.trim()) runUserSearch(socialInput.value.trim()); });
+
+        // -- friend actions (delegated, since rows are re-rendered) --
+
+        async function socialAction(path, options, successMsg) {
+            try {
+                const res = await apiFetch(path, options);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) { socialMsg(data.detail || 'Something went wrong.', 'err'); return false; }
+                if (successMsg) socialMsg(successMsg, 'ok');
+                await loadSocial();
+                return true;
+            } catch (err) {
+                if (err.message !== 'unauthenticated') socialMsg('Could not reach server.', 'err');
+                return false;
+            }
+        }
+
+        document.getElementById('social-page').addEventListener('click', async e => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+
+            if (btn.dataset.add) {
+                const username = btn.dataset.add;
+                btn.disabled = true;
+                const ok = await socialAction('/me/friend-requests', {
+                    method: 'POST', body: JSON.stringify({ username })
+                }, `Request sent to ${username}.`);
+                btn.disabled = false;
+                if (ok) { socialInput.value = ''; socialDropdown.classList.remove('open'); }
+            }
+            else if (btn.dataset.accept) {
+                await socialAction(`/me/friend-requests/${btn.dataset.accept}/respond`, {
+                    method: 'POST', body: JSON.stringify({ accept: true })
+                }, 'Friend added.');
+            }
+            else if (btn.dataset.decline) {
+                await socialAction(`/me/friend-requests/${btn.dataset.decline}/respond`, {
+                    method: 'POST', body: JSON.stringify({ accept: false })
+                }, 'Request declined.');
+            }
+            else if (btn.dataset.cancel) {
+                await socialAction(`/me/friend-requests/${btn.dataset.cancel}`, { method: 'DELETE' },
+                    'Request cancelled.');
+            }
+            else if (btn.dataset.remove) {
+                const username = btn.dataset.username;
+                const confirmed = await showModal(
+                    'Remove friend?',
+                    `${username} will no longer be able to see your lifts, and you will not see theirs.`,
+                    'Remove', 'btn-danger'
+                );
+                if (!confirmed) return;
+                await socialAction(`/me/friends/${btn.dataset.remove}`, { method: 'DELETE' },
+                    `Removed ${username}.`);
+            }
+            else if (btn.dataset.compare) {
+                selectCompareFriend(Number(btn.dataset.compare));
+                // chips already sit in the compare panel; only scroll from the friends list
+                if (!btn.classList.contains('friend-chip')) {
+                    document.getElementById('social-compare-panel').scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+
+        // -- COMPARISON ---------------------
+        const COMPARE_PAGE = 5;
+        let compareFriend     = null;   // { friend_id, username }
+        let compareExercises  = [];     // exercises both of you have logged
+        let compareRows       = [];     // ranked rows for the current exercise
+        let compareShown      = COMPARE_PAGE;
+
+        const compareInput    = document.getElementById('compare-exercise-input');
+        const compareDropdown = document.getElementById('compare-exercise-dropdown');
+
+        function renderCompareChips() {
+            const panel = document.getElementById('social-compare-panel');
+            panel.style.display = socialFriends.length ? 'block' : 'none';
+            document.getElementById('compare-friend-chips').innerHTML = socialFriends.map(f => `
+                <button class="friend-chip${compareFriend && compareFriend.friend_id === f.friend_id ? ' active' : ''}"
+                        data-compare="${f.friend_id}">${esc(f.username)}</button>
+            `).join('');
+
+            // a removed friend must not stay selected
+            if (compareFriend && !socialFriends.some(f => f.friend_id === compareFriend.friend_id)) {
+                resetCompare();
+            }
+        }
+
+        function resetCompare() {
+            compareFriend = null;
+            compareExercises = [];
+            compareRows = [];
+            compareInput.value = '';
+            compareInput.disabled = true;
+            document.getElementById('compare-result').style.display = 'none';
+            document.getElementById('compare-hint').style.display = 'block';
+            document.getElementById('compare-hint').textContent = 'Select a friend to compare with.';
+        }
+
+        async function selectCompareFriend(friendId) {
+            const friend = socialFriends.find(f => f.friend_id === friendId);
+            if (!friend) return;
+            compareFriend = friend;
+            compareRows = [];
+            compareInput.value = '';
+            document.getElementById('compare-result').style.display = 'none';
+            renderCompareChips();
+
+            const hint = document.getElementById('compare-hint');
+            hint.style.display = 'block';
+            hint.textContent = 'Loading…';
+
+            try {
+                const [mineRes, theirsRes] = await Promise.all([
+                    apiFetch('/me/exercises'),
+                    apiFetch(`/me/friends/${friendId}/exercises`),
+                ]);
+                if (!mineRes.ok || !theirsRes.ok) { hint.textContent = 'Could not load exercises.'; return; }
+                const mine   = await mineRes.json();
+                const theirs = new Set(await theirsRes.json());
+                // only exercises you both train are worth comparing
+                compareExercises = mine.filter(e => theirs.has(e));
+            } catch (err) {
+                console.error(err);
+                hint.textContent = 'Could not reach server.';
+                return;
+            }
+
+            if (!compareExercises.length) {
+                compareInput.disabled = true;
+                hint.textContent = `You and ${compareFriend.username} have no exercises in common yet.`;
+                return;
+            }
+
+            compareInput.disabled = false;
+            compareInput.placeholder = `Pick an exercise you and ${compareFriend.username} both train…`;
+            hint.textContent = `${compareExercises.length} exercise${compareExercises.length !== 1 ? 's' : ''} in common — pick one above.`;
+        }
+
+        function renderCompareDropdown(matches) {
+            if (!matches.length) {
+                compareDropdown.innerHTML = '<div class="stats-dropdown-empty">No shared exercises found</div>';
+            } else {
+                compareDropdown.innerHTML = matches.map(name =>
+                    `<div class="stats-dropdown-item" data-exercise="${esc(name)}">${esc(name)}</div>`
+                ).join('');
+            }
+            compareDropdown.classList.add('open');
+        }
+
+        compareInput.addEventListener('focus', () => {
+            const q = compareInput.value.trim().toLowerCase();
+            renderCompareDropdown(compareExercises.filter(e => e.includes(q)).slice(0, 10));
+        });
+        compareInput.addEventListener('input', () => {
+            const q = compareInput.value.trim().toLowerCase();
+            renderCompareDropdown(compareExercises.filter(e => e.includes(q)).slice(0, 10));
+        });
+        compareInput.addEventListener('blur', () => setTimeout(() => compareDropdown.classList.remove('open'), 180));
+        compareDropdown.addEventListener('mousedown', e => {
+            const item = e.target.closest('[data-exercise]');
+            if (!item) return;
+            e.preventDefault();
+            compareInput.value = item.dataset.exercise;
+            compareDropdown.classList.remove('open');
+            loadComparison(item.dataset.exercise);
+        });
+
+        /* Best weight at each rep count — the same rule the Stats table uses,
+         * applied to each lifter separately, then keyed on the rep counts either
+         * of you has trained. */
+        function bestWeightByReps(sets) {
+            const best = new Map();
+            sets.forEach(s => {
+                const current = best.get(s.reps);
+                if (!current || s.weight > current) best.set(s.reps, s.weight);
+            });
+            return best;
+        }
+
+        async function loadComparison(exercise) {
+            if (!compareFriend) return;
+            const hint = document.getElementById('compare-hint');
+            hint.style.display = 'block';
+            hint.textContent = 'Loading…';
+
+            let mine, theirs;
+            try {
+                const [mineRes, theirsRes] = await Promise.all([
+                    apiFetch(`/me/sets?exercise=${encodeURIComponent(exercise)}`),
+                    apiFetch(`/me/friends/${compareFriend.friend_id}/sets?exercise=${encodeURIComponent(exercise)}`),
+                ]);
+                if (!mineRes.ok || !theirsRes.ok) { hint.textContent = 'Could not load sets.'; return; }
+                mine   = await mineRes.json();
+                theirs = await theirsRes.json();
+            } catch (err) {
+                console.error(err);
+                hint.textContent = 'Could not reach server.';
+                return;
+            }
+
+            const mineByReps   = bestWeightByReps(mine);
+            const theirsByReps = bestWeightByReps(theirs);
+            const allReps = [...new Set([...mineByReps.keys(), ...theirsByReps.keys()])].sort((a, b) => a - b);
+
+            compareRows = allReps.map(reps => ({
+                reps,
+                mine:   mineByReps.get(reps)   ?? null,
+                theirs: theirsByReps.get(reps) ?? null,
+            }));
+
+            if (!compareRows.length) {
+                hint.textContent = 'Neither of you has logged sets for that exercise.';
+                document.getElementById('compare-result').style.display = 'none';
+                return;
+            }
+
+            compareShown = COMPARE_PAGE;
+            document.getElementById('compare-col-them').textContent = compareFriend.username;
+            hint.style.display = 'none';
+            document.getElementById('compare-result').style.display = 'block';
+            renderComparison();
+        }
+
+        function renderComparison() {
+            const rows = compareRows.slice(0, compareShown);
+
+            document.getElementById('compare-body').innerHTML = rows.map(r => {
+                const diff = (r.mine !== null && r.theirs !== null) ? r.mine - r.theirs : null;
+                let diffCell = '<td class="compare-blank">—</td>';
+                if (diff !== null) {
+                    const cls = diff > 0 ? 'compare-lead' : diff < 0 ? 'compare-trail' : '';
+                    const sign = diff > 0 ? '+' : '';
+                    diffCell = `<td class="${cls}">${sign}${diff} lb</td>`;
+                }
+                const cell = v => v === null
+                    ? '<td class="compare-blank">—</td>'
+                    : `<td><span class="compare-weight">${esc(v)}</span> lb</td>`;
+                return `<tr><td>${esc(r.reps)}</td>${cell(r.mine)}${cell(r.theirs)}${diffCell}</tr>`;
+            }).join('');
+
+            const remaining = compareRows.length - rows.length;
+            const moreWrap = document.getElementById('compare-more-wrap');
+            moreWrap.style.display = remaining > 0 ? 'block' : 'none';
+            if (remaining > 0) {
+                document.getElementById('compare-more-btn').textContent =
+                    `Show ${Math.min(COMPARE_PAGE, remaining)} more`;
+            }
+
+            // headline: who holds the heaviest single set for this exercise
+            const myBest    = Math.max(...compareRows.map(r => r.mine   ?? 0));
+            const theirBest = Math.max(...compareRows.map(r => r.theirs ?? 0));
+            const summary = document.getElementById('compare-summary');
+            if (myBest === 0 && theirBest === 0) {
+                summary.innerHTML = '';
+            } else if (myBest > theirBest) {
+                summary.innerHTML = `<span class="pr-badge">Top</span><span>You lead on heaviest set — ${myBest} lb vs ${theirBest} lb</span>`;
+            } else if (theirBest > myBest) {
+                summary.innerHTML = `<span class="pr-badge">Top</span><span>${esc(compareFriend.username)} leads on heaviest set — ${theirBest} lb vs ${myBest} lb</span>`;
+            } else {
+                summary.innerHTML = `<span class="pr-badge">Tied</span><span>Both topping out at ${myBest} lb</span>`;
+            }
+        }
+
+        document.getElementById('compare-more-btn').addEventListener('click', () => {
+            compareShown += COMPARE_PAGE;
+            renderComparison();
+        });
+
         // -- RESTORE USER from LOCAL STORAGE -----------
         const saved = localStorage.getItem('liftlog_user');
         if (saved) {
             const parsed = JSON.parse(saved);
-            if (parsed.expiry && Date.now() < parsed.expiry) {
-                currentUser = parsed;
+            // A token is required now; sessions saved before auth existed are dropped.
+            if (parsed.token && parsed.expiry && Date.now() < parsed.expiry) {
+                authToken = parsed.token;
+                currentUser = { user_id: parsed.user_id, username: parsed.username, expiry: parsed.expiry };
                 headerUsername.textContent = currentUser.username;
-                document.querySelector('.page-title').innerHTML = `Let's go, ${currentUser.username} 💪`;
+                document.querySelector('.page-title').innerHTML = `Let's go, ${esc(currentUser.username)} 💪`;
                 loginOverlay.classList.add('hidden');
-                restoreSession(currentUser.user_id);
+                // If the token was revoked or expired server-side, apiFetch logs us out.
+                restoreSession().catch(() => {});
+                loadSocial();
             } else {
                 localStorage.removeItem('liftlog_user');
             }

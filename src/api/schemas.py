@@ -17,6 +17,14 @@ class UserResponse(BaseModel):
     username: str
     created_at: Optional[datetime] = None
 
+class AuthResponse(BaseModel):
+    '''returned by /users and /login — the token authenticates every other call'''
+    user_id: int
+    username: str
+    created_at: Optional[datetime] = None
+    access_token: str
+    token_type: str = "bearer"
+
 # SESSION SCHEMAS
 class SessionCreate(BaseModel):
     performed_at: Optional[datetime] = None
@@ -44,3 +52,31 @@ class SetCreate(BaseModel):
 # CONVENIENCE SCHEMAS
 class SetCreateRequest(BaseModel):
     sets: List[SetCreate] = Field(..., min_length=1)
+
+# FRIENDSHIP SCHEMAS
+class FriendRequestCreate(BaseModel):
+    username: str = Field(..., min_length=1, max_length=50)
+
+class FriendRequestRespond(BaseModel):
+    accept: bool
+
+class FriendResponse(BaseModel):
+    friendship_id: int
+    friend_id: int
+    username: str
+    responded_at: Optional[datetime] = None
+
+class FriendRequestResponse(BaseModel):
+    friendship_id: int
+    friend_id: int
+    username: str
+    created_at: Optional[datetime] = None
+
+class FriendRequestList(BaseModel):
+    incoming: List[FriendRequestResponse]
+    outgoing: List[FriendRequestResponse]
+
+class UserSearchResult(BaseModel):
+    user_id: int
+    username: str
+    status: str   # none | friends | request_sent | request_received
