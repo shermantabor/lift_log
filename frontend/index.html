@@ -785,6 +785,44 @@
       font-weight: 600;
     }
 
+    .top-sets-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .top-sets-table th {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 0 10px 9px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    .top-sets-table td {
+      padding: 10px;
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid rgba(46, 46, 46, 0.5);
+    }
+
+    .top-sets-table tr:last-child td { border-bottom: none; }
+
+    .top-sets-table th:first-child,
+    .top-sets-table td:first-child { padding-left: 0; width: 24px; color: var(--muted); }
+
+    .top-sets-table th:last-child,
+    .top-sets-table td:last-child { padding-right: 0; text-align: right; color: var(--muted); font-size: 11px; }
+
+    .top-sets-weight { font-weight: 700; }
+
+    .top-sets-more {
+      margin-top: 14px;
+      text-align: center;
+    }
+
     .stats-empty {
       padding: 60px 20px;
       text-align: center;
@@ -946,6 +984,26 @@
               </div>
               <canvas id="stats-chart" height="180"></canvas>
               <div class="stats-pr-row" id="stats-pr-row"></div>
+            </div>
+
+            <div class="stats-chart-panel">
+              <div class="stats-chart-header">
+                <div class="stats-chart-title">Heaviest — best per rep count</div>
+              </div>
+              <table class="top-sets-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Weight</th>
+                    <th>Reps</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="top-sets-body"></tbody>
+              </table>
+              <div class="top-sets-more" id="top-sets-more-wrap" style="display:none;">
+                <button class="btn" id="top-sets-more-btn">Show more</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1492,6 +1550,9 @@
         let statsChartInst   = null;
         let statsKbdIndex    = -1;
 
+        const TOP_SETS_PAGE  = 5;   // rows revealed per "show more" click
+        let topSetsShown     = TOP_SETS_PAGE;
+
         const statsInput     = document.getElementById('stats-exercise-input');
         const statsDropdown  = document.getElementById('stats-dropdown');
         const statsEmpty     = document.getElementById('stats-empty-prompt');
@@ -1586,6 +1647,8 @@
             if (statsAllSets.length === 0) { statsEmpty.style.display = 'block'; return; }
 
             renderStatCards();
+            topSetsShown = TOP_SETS_PAGE;   // collapse again for a new exercise
+            renderTopSets();
             renderStatsChart();
             statsContent.style.display = 'block';
         }
@@ -1633,6 +1696,48 @@
             const daysStr  = daysAgo <= 0 ? 'today' : daysAgo === 1 ? 'yesterday' : `${daysAgo} days ago`;
             document.getElementById('stat-reps-sub').textContent  = `across ${sessionCount} session${sessionCount !== 1 ? 's' : ''}`;
             document.getElementById('stat-sessions-sub').textContent = `last: ${daysStr}`;
+        }
+
+        function renderTopSets() {
+            // Best weight at each rep count. Sets arrive oldest-first, so a
+            // strict > keeps the date the weight was first hit.
+            const bestByReps = new Map();
+            statsAllSets.forEach(s => {
+                const best = bestByReps.get(s.reps);
+                if (!best || s.weight > best.weight) bestByReps.set(s.reps, s);
+            });
+
+            // Heaviest first; more reps wins a tie at the same weight. Sorted that
+            // way, the first row at a given weight is its highest rep count — drop
+            // the rest so each weight appears once.
+            const seenWeights = new Set();
+            const ranked = [...bestByReps.values()]
+                .sort((a, b) => b.weight - a.weight || b.reps - a.reps)
+                .filter(s => {
+                    if (seenWeights.has(s.weight)) return false;
+                    seenWeights.add(s.weight);
+                    return true;
+                });
+            const top = ranked.slice(0, topSetsShown);
+
+            const remaining = ranked.length - top.length;
+            const moreWrap  = document.getElementById('top-sets-more-wrap');
+            moreWrap.style.display = remaining > 0 ? 'block' : 'none';
+            if (remaining > 0) {
+                document.getElementById('top-sets-more-btn').textContent =
+                    `Show ${Math.min(TOP_SETS_PAGE, remaining)} more`;
+            }
+
+            document.getElementById('top-sets-body').innerHTML = top.map((s, i) => {
+                const d = new Date(s.performed_at);
+                const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                return `<tr>
+                    <td>${i + 1}</td>
+                    <td><span class="top-sets-weight">${s.weight}</span> lb</td>
+                    <td>${s.reps}</td>
+                    <td>${dateStr}</td>
+                </tr>`;
+            }).join('');
         }
 
         function buildChartData(mode) {
@@ -1735,6 +1840,11 @@
                 }
             });
         }
+
+        document.getElementById('top-sets-more-btn').addEventListener('click', () => {
+            topSetsShown += TOP_SETS_PAGE;
+            renderTopSets();
+        });
 
         document.getElementById('toggle-1rm').addEventListener('click', () => {
             statsChartMode = '1rm';
